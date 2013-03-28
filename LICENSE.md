@@ -1,4 +1,4 @@
-JGoogleCharts.jl is licensed under the MIT License:
+GoogleCharts.jl is licensed under the MIT License:
 
 > Copyright (c) 2013: John Verzani
 >

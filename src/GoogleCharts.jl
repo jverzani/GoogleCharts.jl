@@ -1,4 +1,4 @@
-module JGoogleCharts
+module GoogleCharts
 
 using Mustache
 using JSON
@@ -10,7 +10,7 @@ include("utils.jl")
 include("charts.jl")
 include("render.jl")
 
-tpl_name = Pkg.dir("JGoogleCharts", "tpl", "chart.html")
+tpl_name = Pkg.dir("GoogleCharts", "tpl", "chart.html")
 global chart_tpl = Mustache.parse(file_to_tpl(tpl_name))
 
 

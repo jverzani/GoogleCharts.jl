@@ -1,4 +1,4 @@
-JGoogleCharts
+GoogleCharts
 
 Julia interface to Google Charting package
 
@@ -7,7 +7,7 @@ Just a start. Needs more chart types and convenience interface.
 A basic usage (see the test/ directory for a few more)
 
 ```
-using JGoogleCharts
+using GoogleCharts
 using DataFrames
 
 

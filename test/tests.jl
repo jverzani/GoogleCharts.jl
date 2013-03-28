@@ -1,4 +1,4 @@
-using JGoogleCharts
+using GoogleCharts
 using DataFrames
 
 
