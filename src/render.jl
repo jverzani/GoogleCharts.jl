@@ -19,7 +19,10 @@ function render(chart::GoogleChart, fname::MaybeString)
     close(io)
 
     if do_show
-        run(`open $fname`)
+        ## @unix_only ??
+        @osx_only run(`open $fname`)
+        @windows_only run(`start $fname`)
+        @linux_only run(`xdg-open $fname`)
     end
 end
 render(chart::GoogleChart) = render(chart, nothing)
