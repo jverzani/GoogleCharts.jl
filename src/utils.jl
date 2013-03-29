@@ -24,5 +24,12 @@ function make_data(d::DataFrame)
     out = [make_row(d[i,:]) for i in 1:nrow(d)]
     wrap( to_json(colnames(d)) * ", " * join(out, ", ") )
 end
+
+## Open a url using our heuristic
+function open_url(url::String) 
+    @osx_only run(`open $url`)
+    @windows_only run(`start $url`)
+    @linux_only run(`xdg-open $url`)
+end
         
         
