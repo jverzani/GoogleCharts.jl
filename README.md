@@ -23,3 +23,27 @@ options = {:title => "Age vs. Weight comparison",
 chart = scatter_chart(scatter_data, options, nothing, nothing)
 render(chart)   ## displays in browser
 ```
+
+There needs to be some convenience constructors for these various charts, but nothing is there yet.
+
+
+
+There is a `plot` function for plotting functions:
+
+```
+plot(sin, 0, 2pi)
+```
+
+A vector of functions:
+
+```
+plot([sin, u -> cos(u) > 0 ? 0 : NaN], 0, 2pi)
+```
+
+or paired vectors:
+
+```
+x = linspace(0, 1., 200)
+y = rand(200)
+plot(x, y)
+```
