@@ -5,7 +5,7 @@
       google.load("visualization", "1", {packages:[{{{:chart_packages}}}]});
       google.setOnLoadCallback(drawChart);
       function drawChart() {
-        var data = google.visualization.arrayToDataTable({{{:chart_data}}});
+        var data = {{{:chart_data}}};
         var options = {{{:chart_options}}};
         var chart = new google.visualization.{{:chart_type}}(document.getElementById('{{:chart_id}}'));
         chart.draw(data, options);

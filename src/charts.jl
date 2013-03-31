@@ -29,9 +29,9 @@ charts = (
             "https://developers.google.com/chart/interactive/docs/gallery/columnchart")
           ,(:combo_chart,    "ComboChart",     ["corechart"], {:title => "Combo chart"},
             "https://developers.google.com/chart/interactive/docs/gallery/combochart")
-          ,(:gauge_chart,    "GaugeChart",     ["corechart"], {:title => "Gauge chart"},
+          ,(:gauge_chart,    "Gauge",     ["gauge"], Dict(),
             "https://developers.google.com/chart/interactive/docs/gallery/gaugechart")
-          ,(:geo_chart,      "GeoChart",       ["corechart"], {:title => "Geo chart"},
+          ,(:geo_chart,      "GeoChart",       ["geochart"], {:title => "Geo chart"},
             "https://developers.google.com/chart/interactive/docs/gallery/geochart")
           ,(:line_chart,     "LineChart",      ["corechart"], {:title => "Line chart"},
             "https://developers.google.com/chart/interactive/docs/gallery/linechart")
@@ -39,35 +39,40 @@ charts = (
             "https://developers.google.com/chart/interactive/docs/gallery/piechart")
           ,(:scatter_chart,  "ScatterChart",   ["corechart"], {:title => "Scatter chart"},
             "https://developers.google.com/chart/interactive/docs/gallery/scatterchart")
-          ,(:stepped_area__chart,    "SteppedAreaChart",   ["corechart"], {:title => "Stepped area chart"},
+          ,(:stepped_area_chart,    "SteppedAreaChart",   ["corechart"], {:title => "Stepped area chart"},
             "https://developers.google.com/chart/interactive/docs/gallery/steppedareachart")
-          ,(:table_chart,    "TableChart",     ["corechart"], {:title => "Table chart"},
+          ,(:table_chart,    "Table",     ["table"], {:title => "Table chart"},
             "https://developers.google.com/chart/interactive/docs/gallery/tablechart")
-          ,(:tree_chart,     "TreeChart",      ["corechart"], {:title => "Tree chart"},
+          ,(:tree_chart,     "TreeMap",      ["treemap"], {:title => "Tree chart"},
             "https://developers.google.com/chart/interactive/docs/gallery/treechart")
+          ## See note about viewing from a file here: https://developers.google.com/chart/interactive/docs/gallery/motionchart#Overview
           ,(:annotated_time_line,    "AnnotatedTimeLine",   ["annotatedtimeline"], {:title => "Annotated time line"},
             "https://developers.google.com/chart/interactive/docs/gallery/annotatedtimeline")
           ,(:intensity_map,  "IntensityMap",   ["intensitymap"], {:title => "Intensity map"},
             "https://developers.google.com/chart/interactive/docs/gallery/intensitymap")
-          ,(:motion_chart,   "MotionChart",    ["motionchart"], {:title => "Motion chart"},
+          ,(:motion_chart,   "MotionChart",    ["motionchart"], {:width=>600,:height=>600},
             "https://developers.google.com/chart/interactive/docs/gallery/motionchart")
           ,(:org_chart,      "OrgChart",       ["orgchart"], {:title => "Org chart"},
             "https://developers.google.com/chart/interactive/docs/gallery/orgchart")
-          ,(:image_spark_line,    "ImageSparkLine",   ["imagesparkline"], {:title => "Sparkline"},
+          ,(:image_spark_line,    "ImageSparkLine",   ["imagesparkline"], Dict(),
             "https://developers.google.com/chart/interactive/docs/gallery/imagesparkline")
           )
                
 ## Make constructors
+## e.g.
+## line_type(data, opts, width, height)
+## line_type(data, opts) ## default 900, 500
 for (nm, ctype, packages, defaults, url) in charts
     @eval begin
-        function $(nm)(data, opts::MaybeDict, width::MaybeInt, height::MaybeInt)
+        function $(nm)(data::DataFrame, opts::MaybeDict, width::MaybeInt, height::MaybeInt)
             obj = CoreChart($packages, string($ctype), get_id(), 900, 500, $defaults, nothing, "" )
             if isa(opts, Dict) obj.options = merge(obj.options, opts) end
             if isa(width, Integer) obj.width = width end
             if isa(height, Integer) obj.height = height end
-            obj.data = make_data(data)
+            obj.data = make_data_array(data)
             obj
         end
+        $(nm)(data::DataFrame, opts::MaybeDict) = $(nm)(data, opts)
     end
 end
 
