@@ -1,39 +1,73 @@
-function type_to_dict(chart::GoogleChart)
+function charttype_to_dict(chart::GoogleChart)
     {:chart_packages => join(["\"$i\""for i in chart.packages], ", "),
      :chart_type => chart.chart_type,
      :chart_id => chart.id,
      :width=>chart.width,
      :height=>chart.height,
      :chart_data => chart.data,
-     :chart_options => JSON.to_json(chart.options),
-     :chart_xtra => chart.xtra
+     :chart_options => JSON.to_json(chart.options)
      }
 end
 
-## Render chart, either to filename or for display
-function render(chart::GoogleChart,     # chart object
-                fname::MaybeString,     # filename (opens in browser if not given)
-                tpl::Union(Nothing, Mustache.MustacheTokens) # Mustache template. Default is entire page
-                )
+## take vector of google charts
+function charts_to_dict(charts)
+
+    packages = string(union([chart.packages for chart in charts]...))
     
-    details = type_to_dict(chart)
-    do_show = fname == nothing
+   {:chart_packages => packages,
+    :charts => [charttype_to_dict(chart) for chart in charts],
+    :chart_xtra => join([chart.xtra for chart in charts],"\n")
+   }
+end
+
+## Render charts
+## io -- render to io stream
+## fname -- render to file
+## none -- create html file, show in browser
+function render{T <: GoogleChart}(io::IO,
+                                  charts::Vector{T},     # chart objects
+                                  tpl::Union(Nothing, Mustache.MustacheTokens) # Mustache template. Default is entire page
+                                  )
+    
+    details = charts_to_dict(charts)
 
     ## defaults
     _tpl = isa(tpl, Nothing) ? chart_tpl : tpl
-    if isa(fname, Nothing) fname = tempname() * ".html" end
 
-    io = open(fname, "w")
     Mustache.render(io, _tpl, details)
-    close(io)
-
-    if do_show
-        open_url(fname)
-    end
 end
 
-## write to file
-render(chart::GoogleChart, fname::String) = render(chart, fname, nothing)
-## open in browser
-render(chart::GoogleChart) = render(chart, nothing, nothing)
+function render{T <: GoogleChart}(fname::String,
+                                  charts::Vector{T},
+                                  tpl::Union(Nothing, Mustache.MustacheTokens))
+
+    io = open(fname, "w")
+    render(io, charts, tpl)
+    close(io)
+end
+function render{T <: GoogleChart}(charts::Vector{T}, tpl::Union(Nothing, Mustache.MustacheTokens)) 
+    fname = tempname() * ".html"
+    render(fname, charts, tpl)
+    open_url(fname)
+end
+
+## no tpl
+render{T <: GoogleChart}(io::IO, charts::Vector{T}) = render(io, charts, nothing)
+render{T <: GoogleChart}(fname::String, charts::Vector{T}) = render(fname, charts, nothing)
+## no io or file name specified
+render{T <: GoogleChart}(charts::Vector{T}) = render(charts, nothing)
+render{T <: GoogleChart}(io::Nothing, charts::Vector{T}, tpl::Union(Nothing, Mustache.MustacheTokens)) = render(charts, tpl)
+
+render(io::IO, chart::GoogleChart, tpl::Union(Nothing, Mustache.MustacheTokens)) = render(io, [chart], tpl)
+render(io::IO, chart::GoogleChart) = render(io, chart, nothing)
+render(fname::String, chart::GoogleChart, tpl::Union(Nothing, Mustache.MustacheTokens)) = render(fname, [chart], tpl)
+render(fname::String, chart::GoogleChart) = render(fname, [chart], nothing)
+
+render(chart::GoogleChart, tpl::Union(Nothing, Mustache.MustacheTokens)) = render([chart], tpl)
+render(chart::GoogleChart) = render([chart])
+render(io::Nothing, chart::GoogleChart, tpl::Union(Nothing, Mustache.MustacheTokens)) = render([chart], tpl)
+render(io::Nothing, chart::GoogleChart) = render([chart], nothing)
+
+
+
 

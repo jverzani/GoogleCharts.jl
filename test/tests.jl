@@ -14,13 +14,13 @@ options = {
            :title => "Company Performance",
            :hAxis => {:title => "Year",  :titleTextStyle => {:color => "red"}}
            };
-chart = area_chart(area_data, options, nothing, nothing)
+chart = area_chart(area_data, options)
 render(chart)
 
 
 ## Bar Chart
 bar_data = area_data
-chart = bar_chart(bar_data, options, nothing, nothing)
+chart = bar_chart(bar_data, options)
 render(chart)
 
 ## Bubble Chart
@@ -42,21 +42,20 @@ options = {
            };
 
 
-chart = bubble_chart(bubble_data, options, nothing, nothing)
+chart = bubble_chart(bubble_data, options)
 render(chart)
 
-## candlestick_chart, ## DOESN"T WORK, data is transposed?
+## candlestick_chart, 
 candle_data = DataFrame(quote
-    days = ["Mon", "Tue", "Wed", "Thu", "Fri"]
-    low = [ 20, 28, 38, 45, 50]
-    opening = [ 31, 38, 55, 66, 70]
-    closing = [ 50, 55, 77, 80, 80]
-    high = [ 77, 77, 66, 50, 90]
-    tootip = ["Hello", "world", "How", "are", "you?"]
+    days    = ["Mon", "Tue", "Wed", "Thu", "Fri"]
+    low     = [ 20, 28, 38, 45, 50]
+    opening = [ 31, 50, 55, 77, 80]
+    closing = [ 50, 55, 77, 80, 50]
+    high    = [ 77, 77, 96, 90, 90]
 end)
-options = {:title => "Candle stick"}
 
-chart = candlestick_chart(candle_data, options, nothing, nothing)
+
+chart = candlestick_chart(candle_data, Dict())
 render(chart)
 
 ## column_chart,
@@ -64,7 +63,7 @@ column_data = year_sales_expenses
 options = {:title => "Company performance",
            :hAxis => {:title=> "Year", :titleTextStyle=> {:color => "red"}}}
  
-chart = column_chart(column_data, options, nothing, nothing)
+chart = column_chart(column_data, options)
 render(chart)          
 ## combo_chart,
 
@@ -84,7 +83,7 @@ options = {
            :seriesType=> "bars",
            :series=> ["{}","{}","{}","{}",{:type=> "line"}]
         };
-chart = combo_chart(combo_data, options, nothing, nothing)
+chart = combo_chart(combo_data, options)
 render(chart)    
 ## gauge_chart,
  gauge_data = DataFrame(quote
@@ -98,7 +97,7 @@ options = {
            :yellowFrom=>75, :yellowTo=> 90,
            :minorTicks=> 5
         }
-chart = gauge_chart(gauge_data, options, nothing, nothing)
+chart = gauge_chart(gauge_data, options)
 render(chart) 
 ## geo_chart,
 
@@ -107,7 +106,7 @@ geo_data = DataFrame(quote
     Popularity = [200, 300, 400, 500, 600, 700]
 end)
 options = Dict()
-chart = geo_chart(geo_data, options, nothing, nothing)
+chart = geo_chart(geo_data, options)
 render(chart) 
 
 
@@ -115,7 +114,7 @@ render(chart)
 ## Line Chart
 line_data = area_data
 options = {:title => "Company Performance"}
-chart = line_chart(line_data, options, nothing, nothing)
+chart = line_chart(line_data, options)
 render(chart)
 
 
@@ -125,7 +124,7 @@ pie_data = DataFrame(quote
     HoursPerDay = [11,2,2,2,7]
 end)
 options = {:title => "My Daily Activities"}
-chart = pie_chart(pie_data, options, nothing, nothing)
+chart = pie_chart(pie_data, options)
 render(chart)
 
 ## Scatter Chart
@@ -141,7 +140,7 @@ options = {:title => "Age vs. Weight comparison",
 }
 
 
-chart = scatter_chart(scatter_data, options, nothing, nothing)
+chart = scatter_chart(scatter_data, options)
 render(chart)
 
 ## stepped_area__chart,
@@ -154,7 +153,7 @@ stepped_area_data = DataFrame(quote
     IMDB = [7.9, 6.5, 6.4, 6.2]
 end)
 options = {:title=>"The decline of 'The 39 Steps'", :vAxis => {:title=>"Accumulated Rating"}, :isStacked => true}
-chart = stepped_area_chart(stepped_area_data, options, nothing, nothing)
+chart = stepped_area_chart(stepped_area_data, options)
 render(chart)
 ## table_chart,
 ### XXX Need a way to do value/format for Salary, but perhaps this is best done in julia?
@@ -164,7 +163,7 @@ table_data = DataFrame(quote
     "Full time employee" = [true, false, true, true]
 end)
 options = {:showRowNumber => true}
-chart = table_chart(table_data, options, nothing, nothing)
+chart = table_chart(table_data, options)
 render(chart)
 
 
@@ -183,7 +182,7 @@ options = {
           :fontColor=> "black",
           :showScale=> true
            }
-chart = tree_chart(tree_data, options, nothing, nothing)
+chart = tree_chart(tree_data, options)
 render(chart)
 
 ## annotated_time_line,
@@ -201,12 +200,12 @@ tmp = DataFrame(quote
 end)
 annotated_data = cbind(annotated_data, tmp)
 options = {:displayAnnotations=>true}
-chart = annotated_time_line(annotated_data, options, nothing, nothing)
+chart = annotated_time_line(annotated_data, options)
 render(chart)
 
 ## intensity_map,
 
-## Motion chart
+## Motion chart: Doesn't render locally without some adjustments...
 d = DataFrame()
 d = cbind(d, ["Apples", "Oranges", "Bananas", "Apples", "Oranges", "Bananas"])
 j1, j2 = ymd(1988, 1, 1), ymd(1989, 1, 1)
@@ -218,7 +217,7 @@ d = cbind(d, [e, w, w, e, w, w])
 colnames!(d, ["Fruit", "Date", "Sales", "Expenses", "Location"])
 
 
-chart = motion_chart(d, nothing, nothing, nothing)
+chart = motion_chart(d, nothing)
 render(chart)
 
 
@@ -231,7 +230,7 @@ org_data = DataFrame(quote
 end)
 
 options = {:allowHtml=>true}
-chart = org_chart(org_data, options, nothing, nothing)
+chart = org_chart(org_data, options)
 render(chart)
 
 
@@ -244,5 +243,16 @@ end)
 
 options = {:width=> 120, :height=> 40, :showAxisLines=> false,  :showValueLabels=> false, :labelPosition=> "left"}
 
-chart = image_spark_line(spark_data, options, nothing, nothing)
+chart = image_spark_line(spark_data, options)
 render(chart)
+
+
+
+
+## Our plot interface
+plot(sin, 0, 2pi)
+plot([sin, u -> cos(u) > 0 ? 0 : NaN], 0, 2pi, {:lineWidth=>5, 
+	                                        :title=>"A function and where its derivative is positive",
+						:vAxis=>{:minValue => -1.2, :maxValue => 1.2}
+						})
+                                                

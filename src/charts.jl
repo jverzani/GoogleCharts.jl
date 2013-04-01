@@ -69,10 +69,10 @@ for (nm, ctype, packages, defaults, url) in charts
             if isa(opts, Dict) obj.options = merge(obj.options, opts) end
             if isa(width, Integer) obj.width = width end
             if isa(height, Integer) obj.height = height end
-            obj.data = make_data_array(data)
+            obj.data = make_data_array(obj.id, data)
             obj
         end
-        $(nm)(data::DataFrame, opts::MaybeDict) = $(nm)(data, opts)
+        $(nm)(data::DataFrame, opts::MaybeDict) = $(nm)(data, opts, nothing, nothing)
     end
 end
 
