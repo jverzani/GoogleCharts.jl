@@ -33,7 +33,7 @@ options = {:title => "Age vs. Weight comparison",
                        :minValue => 0, 
                        :maxValue => 15},	
            :vAxis =>  {:title => "Weight", 
-	               :minValue => 0, 
+                       :minValue => 0, 
                        :maxValue => 15}
 }
 
