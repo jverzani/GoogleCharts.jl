@@ -13,10 +13,15 @@ A Google chart involves basically four steps:
 
 This package allows this to be done within `julia` by
 
-* mapping a `DataFrame` object into a Google DataTable 
+* mapping a `DataFrame` object into a Google DataTable. 
+
 * mapping a Dict of options into a JSON object of chart options
+
 * providing various constructors to make the type of chart
-* providing a `render` method to draw the chart (or charts) to an IOStream, a file or to a page in a local web browser.
+
+* providing a `render` method to draw the chart (or charts) to an
+  IOStream, a file or to a page in a local web browser. The `show`
+  method will open the chart in the local web browser.
 
 A basic usage (see the test/ directory for more)
 
@@ -37,9 +42,9 @@ options = {:title => "Age vs. Weight comparison",
                        :maxValue => 15}
 }
 
-chart = scatter_chart(scatter_data, options)
+chart = scatter_chart(scatter_data, options);
 
-render(chart)   ## displays in browser
+render(chart)   ## displays in browser. The show() method will also do so by default.
 ```
 
 
@@ -57,20 +62,28 @@ The helper function `help_on_chart("chart_name")` will open Google's documentati
 
 The names of the data frame are used by the various charts. The order
 of the columns is important to the charting tools. The "Data Format"
-section of each web page describes this.
+section of each web page describes this. We don't have a mechanism in
+place supporting Google's "Column roles".
 
 The options are specified through a `Dict` which is translated into
 JSON by `JSON.to_json`. There are *numerous* options described in the
-"Configuration Options" section of each chart's web page.
+"Configuration Options" section of each chart's web page. Some useful
+ones are shown in the example to set labels for the variables and the
+viewport. Google charts seem to like integer ranges in the viewports by default.
 
-In the `tests/` subdirectory is the basic example from Google's web page reproduced with this package.
+In the `tests/` subdirectory is a file with implementations with this
+package of the basic examples from Google's web pages. Some additional
+examples of configurations can be found there.
 
-
-The `render` method can draw a chart to an IOStream, a specified filename, or (when used as above) to a web page that is displayed locally. One can specify more than one chart at a time using a vector of charts. 
+The `render` method can draw a chart to an IOStream, a specified
+filename, or (when used as above) to a web page that is displayed
+locally. One can specify more than one chart at a time using a vector
+of charts. We have defined the `show` method to render the chart in
+the browser.
 
 ### A plot function
 
-There is a `plot` function for plotting functions:
+There is a `plot` function for plotting functions with a similar interface as `Gadfly`'s `plot` function:
 
 ```
 plot(sin, 0, 2pi)
@@ -87,15 +100,44 @@ plot([sin, u -> cos(u) > 0 ? 0 : NaN], 0, 2pi, {:lineWidth=>5,
 
 The `plot` function uses a `line_chart`. The above example shows that `NaN` values are handled gracefully, unlike `Inf` values, which we replace with `NaN`.
 
-or paired vectors:
+Plot also works for paired vectors:
 
 ```
-x = linspace(0, 1., 200)
-y = rand(200)
-plot(x, y)
+x = linspace(0, 1., 20)
+y = rand(20)
+plot(x, y)			         # dot-to-dot plot
+plot(x, y, {:curveType => "function"})   # smooths things out
 ```
 
+### scatter plots
 
+The latter shows that `plot` assumes your data is a discrete
+approximation to a function. For scatterplots, the `scatter`
+convenience function is given. A simple use might be:
+
+```
+x = linspace(0, 1., 20)
+y = rand(20)
+scatter(x, y)
+```
+
+If the data is in a data frame format we have a interface like:
+
+```
+using RDatasets
+mtcars = data("datasets", "mtcars")
+scatter(:wt, :mpg, mtcars)
+```
+
+And we can even use with `groupby` objects:
+
+```
+iris = data("datasets", "iris")
+d=iris[:, [2,3,6]]          ## in the order  "x, y, grouping factor"
+gp = groupby(d, :Species)
+scatter(gp)                 ## in R this would be plot(Sepal.Width ~ Sepal.Length, iris, col=Species)
+                            ## or ggplot(iris, aes(x=Sepal.Length, y=Sepal.Width, color=Species)) + geom_point()
+```
 
 ### TODO
 

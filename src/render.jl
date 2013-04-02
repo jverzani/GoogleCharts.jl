@@ -1,5 +1,5 @@
 function charttype_to_dict(chart::GoogleChart)
-    {:chart_packages => join(["\"$i\""for i in chart.packages], ", "),
+    {
      :chart_type => chart.chart_type,
      :chart_id => chart.id,
      :width=>chart.width,
@@ -54,7 +54,7 @@ end
 ## no tpl
 render{T <: GoogleChart}(io::IO, charts::Vector{T}) = render(io, charts, nothing)
 render{T <: GoogleChart}(fname::String, charts::Vector{T}) = render(fname, charts, nothing)
-## no io or file name specified
+## no io or file name specified, render to browser
 render{T <: GoogleChart}(charts::Vector{T}) = render(charts, nothing)
 render{T <: GoogleChart}(io::Nothing, charts::Vector{T}, tpl::Union(Nothing, Mustache.MustacheTokens)) = render(charts, tpl)
 
@@ -69,5 +69,6 @@ render(io::Nothing, chart::GoogleChart, tpl::Union(Nothing, Mustache.MustacheTok
 render(io::Nothing, chart::GoogleChart) = render([chart], nothing)
 
 
-
+## display to browser
+show(io::IO, chart::GoogleChart) = render(nothing, chart)
 

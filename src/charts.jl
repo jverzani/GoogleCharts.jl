@@ -61,11 +61,12 @@ charts = (
 ## Make constructors
 ## e.g.
 ## line_type(data, opts, width, height)
-## line_type(data, opts) ## default 900, 500
+## line_type(data, opts) ## default 900, 600
+## line_type(data)       ## deafult title, 900, 600
 for (nm, ctype, packages, defaults, url) in charts
     @eval begin
         function $(nm)(data::DataFrame, opts::MaybeDict, width::MaybeInt, height::MaybeInt)
-            obj = CoreChart($packages, string($ctype), get_id(), 900, 500, $defaults, nothing, "" )
+            obj = CoreChart($packages, string($ctype), get_id(), 900, 600, $defaults, nothing, "" )
             if isa(opts, Dict) obj.options = merge(obj.options, opts) end
             if isa(width, Integer) obj.width = width end
             if isa(height, Integer) obj.height = height end
@@ -73,6 +74,7 @@ for (nm, ctype, packages, defaults, url) in charts
             obj
         end
         $(nm)(data::DataFrame, opts::MaybeDict) = $(nm)(data, opts, nothing, nothing)
+        $(nm)(data::DataFrame) = $(nm)(data, nothing, nothing, nothing)
     end
 end
 
