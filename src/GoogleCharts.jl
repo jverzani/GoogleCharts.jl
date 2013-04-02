@@ -13,7 +13,7 @@ include("render.jl")
 include("conveniences.jl")
 
 tpl_name = Pkg.dir("GoogleCharts", "tpl", "chart.html")
-global chart_tpl = Mustache.parse(file_to_tpl(tpl_name))
+global chart_tpl = Mustache.template_from_file(tpl_name)
 
 
 
