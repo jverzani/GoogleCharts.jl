@@ -70,5 +70,5 @@ render(io::Nothing, chart::GoogleChart) = render([chart], nothing)
 
 
 ## display to browser
-show(io::IO, chart::GoogleChart) = render(nothing, chart)
+#show(io::IO, chart::GoogleChart) = render(nothing, chart)
 
