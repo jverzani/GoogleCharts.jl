@@ -12,7 +12,8 @@ function plot(io::Union(IO, String, Nothing), f::Function, a::Real, b::Real, arg
     colnames!(d, ["x", "y"])
 
     chart = line_chart(d, merge(args, {:curveType => "function"}), nothing, nothing)
-    render(io, chart)
+    #render(io, chart)
+    chart
 end
 
 plot(f::Function, a::Real, b::Real, args::Dict) = plot(nothing, f, a, b, args)
@@ -34,7 +35,8 @@ function  plot(io::Union(IO, String, Nothing), fs::Vector{Function}, a::Real, b:
     colnames!(d, ["x", ["f$i" for i in 1:length(fs)]])
         
     chart = line_chart(d, merge(args, {:curveType => "function"}), nothing, nothing)
-    render(io, chart)
+    #render(io, chart)
+    chart
 end
 
 plot(fs::Vector{Function}, a::Real, b::Real, args::Dict) = plot(nothing, fs, a, b, args)
@@ -49,7 +51,8 @@ function plot{S <: Real, T <: Real}(io::Union(IO, String, Nothing),
     colnames!(d, ["x", "y"])
 
     chart = line_chart(d, args, nothing, nothing)
-    render(io, chart)
+    #render(io, chart)
+    chart
 end
 
 VectorLike = Union(DataArray, Range1, Vector)
