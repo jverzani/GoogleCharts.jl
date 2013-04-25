@@ -20,8 +20,7 @@ This package allows this to be done within `julia` by
 * providing various constructors to make the type of chart
 
 * providing a `render` method to draw the chart (or charts) to an
-  IOStream, a file or to a page in a local web browser. The `show`
-  method will open the chart in the local web browser.
+  IOStream, a file or to a page in a local web browser. 
 
 A basic usage (see the test/ directory for more)
 
@@ -44,7 +43,7 @@ options = {:title => "Age vs. Weight comparison",
 
 chart = scatter_chart(scatter_data, options);
 
-render(chart)   ## displays in browser. The show() method will also do so by default.
+render(chart)   ## displays in browser. 
 ```
 
 

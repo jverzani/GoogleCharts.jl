@@ -52,7 +52,6 @@ function plot{S <: Real, T <: Real}(io::Union(IO, String, Nothing),
 
     chart = line_chart(d, args, nothing, nothing)
     chart
-#    render(io, chart)
 end
 
 VectorLike = Union(DataArray, Range1, Vector)
