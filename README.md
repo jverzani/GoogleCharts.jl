@@ -47,7 +47,7 @@ render(chart)   ## displays in browser.
 ```
 
 
-There are constructors for the following charts (cf. https://developers.google.com/chart/interactive/docs/gallery):
+There are constructors for the following charts (cf. https://developers.google.com/chart/interactive/docs/gallery ):
 
 ```
        area_chart, bar_chart, bubble_chart, candlestick_chart, column_chart, combo_chart,
