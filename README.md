@@ -141,6 +141,15 @@ scatter(gp)                 ## in R this would be plot(Sepal.Width ~ Sepal.Lengt
                             ## or ggplot(iris, aes(x=Sepal.Length, y=Sepal.Width, color=Species)) + geom_point()
 ```
 
+
+### Surface plots
+
+Some experimental code is in place for surface plots. It needs work. The basic use is like:
+
+```
+surfaceplot((x,y) -> x^2 + y^2, linspace(0,1,20), linspace(0,2,20))
+```
+
 ### TODO
 
 The `googleVis` package for `R` does a similar thing, but has more
