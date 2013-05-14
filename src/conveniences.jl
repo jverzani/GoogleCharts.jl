@@ -93,3 +93,21 @@ function scatter(gp::GroupedDataFrame, args::Dict)
 end
 scatter(gp::GroupedDataFrame)  = scatter(gp, Dict())    
 
+
+
+
+## Surface plot is *all* different integrate in later
+function surfaceplot(f::Function, x::Vector, y::Vector)
+    chart_id = get_id()
+    d = DataFrame(Float64[f(x,y) for x in x, y in y])
+    tool_tip(x,y) = "(" * (map(u -> round(u, 2), [x,y,f(x,0)]) | u -> join(u, ", ")) * ")"
+    tooltips = [tool_tip(x,y) for x in x, y in y] | u -> reshape(u, length(x)*length(y)) | JSON.to_json
+
+    tpl = Mustache.template_from_file(Pkg.dir("GoogleCharts", "tpl", "surface.html"))
+    f = tempname() * ".html"
+    io = open(f, "w")
+    Mustache.render(io, tpl, {:datatable => make_data_array(chart_id, d), :tooltips=>tooltips, :chart_id=>chart_id})
+    close(io)
+    open_url(f)
+end
+    

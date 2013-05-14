@@ -68,3 +68,5 @@ render(chart::GoogleChart) = render([chart])
 render(io::Nothing, chart::GoogleChart, tpl::Union(Nothing, Mustache.MustacheTokens)) = render([chart], tpl)
 render(io::Nothing, chart::GoogleChart) = render([chart], nothing)
 
+## display to browser
+show(io::IO, chart::GoogleChart) = render(nothing, chart)

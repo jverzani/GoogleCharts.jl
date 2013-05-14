@@ -30,10 +30,10 @@ function make_data_array(id::String, d::DataFrame)
         push!(out, add_column(id, nms[i], vector(d[:,i])[1]))
     end
     push!(out, id*"_data.addRows([")
-        push!(out, join([make_row(d[i,:]) for i in 1:nrow(d)], ", "))
-        push!(out, "])")
-        join(out, "")
-    end
+    push!(out, join([make_row(d[i,:]) for i in 1:nrow(d)], ", "))
+    push!(out, "])")
+    join(out, "")
+end
 
 
 ## Open a url using our heuristic
