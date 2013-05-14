@@ -47,7 +47,8 @@ render(chart)   ## displays in browser.
 ```
 
 
-There are constructors for the following charts (cf. https://developers.google.com/chart/interactive/docs/gallery):
+There are constructors for the following charts
+(cf. [Charts Gallery](https://developers.google.com/chart/interactive/docs/gallery)):
 
 ```
        area_chart, bar_chart, bubble_chart, candlestick_chart, column_chart, combo_chart,
@@ -56,7 +57,8 @@ There are constructors for the following charts (cf. https://developers.google.c
        image_spark_line
 ```
 
-The helper function `help_on_chart("chart_name")` will open Google's documentation for the specified chart in a local browser.
+The helper function `help_on_chart("chart_name")`
+will open Google's documentation for the specified chart in a local browser.
 
 
 The names of the data frame are used by the various charts. The order
@@ -97,7 +99,9 @@ plot([sin, u -> cos(u) > 0 ? 0 : NaN], 0, 2pi, {:lineWidth=>5,
 						})
 ```
 
-The `plot` function uses a `line_chart`. The above example shows that `NaN` values are handled gracefully, unlike `Inf` values, which we replace with `NaN`.
+The `plot` function uses a `line_chart`.
+The above example shows that `NaN` values are handled gracefully,
+unlike `Inf` values, which we replace with `NaN`.
 
 Plot also works for paired vectors:
 
