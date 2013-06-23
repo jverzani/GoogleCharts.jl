@@ -1,3 +1,9 @@
+try 
+    methods(|>)
+catch
+    |>(x, f::Function) = f(x)
+end
+
 
 MaybeDict = Union(Nothing, Dict)
 MaybeInt  = Union(Nothing, Integer)
