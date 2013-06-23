@@ -256,3 +256,20 @@ plot([sin, u -> cos(u) > 0 ? 0 : NaN], 0, 2pi, {:lineWidth=>5,
 						:vAxis=>{:minValue => -1.2, :maxValue => 1.2}
 						})
                                                 
+## stupid boxplot interface
+x = randn(20)
+y = rand(20)
+boxplot(x)
+## might swap x and y order
+boxplot({:x => x, :y=>y})
+## a bit better
+d = DataFrame(data=[x, y],
+              nms=reshape([repmat(["x"], length(x),1), repmat(["y"], length(y),1)], length([x,y]))
+              )
+gp = groupby(d, :nms)
+boxplot(gp)
+
+## histogram
+histogram(x)
+histogram(x, n=50)
+

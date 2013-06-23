@@ -24,6 +24,7 @@ export area_chart, bar_chart, bubble_chart, candlestick_chart, column_chart, com
        gauge_chart, geo_chart, line_chart, pie_chart, scatter_chart, stepped_area_chart,
        table_chart, tree_chart, annotated_time_line, intensity_map, motion_chart, org_chart,
        image_spark_line
+export boxplot, histogram
 export surfaceplot
 
 

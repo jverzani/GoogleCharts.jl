@@ -23,7 +23,7 @@ add_column(id::String, nm::String, x::Bool)         = Mustache.render(column_tpl
 ## Make a google data table from a data frame object
 function make_data_array(id::String, d::DataFrame)
     wrap(x) = "[$x]"
-    make_row(x) = join([two_json(x[1,i]) for i in 1:ncol(d)], ", ") | wrap
+    make_row(x) = join([two_json(x[1,i]) for i in 1:ncol(d)], ", ") |> wrap
     out = ["new google.visualization.DataTable();"]
     nms = colnames(d)
     for i in 1:size(d)[2]

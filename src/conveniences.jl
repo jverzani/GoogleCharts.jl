@@ -100,8 +100,8 @@ scatter(gp::GroupedDataFrame)  = scatter(gp, Dict())
 function surfaceplot(f::Function, x::Vector, y::Vector)
     chart_id = get_id()
     d = DataFrame(Float64[f(x,y) for x in x, y in y])
-    tool_tip(x,y) = "(" * (map(u -> round(u, 2), [x,y,f(x,0)]) | u -> join(u, ", ")) * ")"
-    tooltips = [tool_tip(x,y) for x in x, y in y] | u -> reshape(u, length(x)*length(y)) | JSON.to_json
+    tool_tip(x,y) = "(" * (map(u -> round(u, 2), [x,y,f(x,0)]) |> u -> join(u, ", ")) * ")"
+    tooltips = [tool_tip(x,y) for x in x, y in y] |> u -> reshape(u, length(x)*length(y)) |> JSON.to_json
 
     tpl = Mustache.template_from_file(Pkg.dir("GoogleCharts", "tpl", "surface.html"))
     f = tempname() * ".html"
@@ -110,4 +110,95 @@ function surfaceplot(f::Function, x::Vector, y::Vector)
     close(io)
     open_url(f)
 end
+
+
+
+## Boxplots are not right! I don't know how to add points in a combo chart!
+function boxplot_stats{T<:Number}(x::Vector{T}; coef=1.5)
+    sort!(x)
+    fivenum = quantile(x, 0:(.25):1)
+    outliers = T[]
+
+    IQR = fivenum[4] - fivenum[2]
+    upper =  fivenum[4] + coef * IQR
+    lower =  fivenum[2] - coef * IQR
+    
+    if fivenum[5] > upper
+        fivenum[5] = upper
+        outliers = [outliers, x[ x.> upper]]
+    end
+
+    if fivenum[1] < lower
+        fivenum[1] = lower
+        outliers = [outliers, x[ x.< lower]]
+    end
+        
+    (fivenum, outliers)
+end
+
+## Boxplot only shows five number summary, no marking of outliers
+## in fact, no marking of the median!
+function boxplot(x::Vector, args::Dict)
+    # stats = boxplot_stats(x)
+    sort!(x)
+    stats = quantile(x, 0:1/4:1)
+    data = DataFrame(names=["x"],
+                     IQR = stats[1], # really min?
+                     q3 = stats[4],
+                     q1 = stats[2],
+                     max= stats[5]
+                     )
+
+    candlestick_chart(data, merge(args, {:legend=>nothing}))
+end
+
+## Not great, as ordering in d is not guaranteed
+function boxplot(d::Dict, args::Dict)
+    ## not efficient, but whatever
+    nms = String[string(k) for k in keys(d)]
+    vals = [quantile(v, u) for (k,v) in d, u in 0:.25:1] |> float
+
+    data = DataFrame(names=nms,
+                     IQR = vals[:,1],
+                     q3 = vals[:,4],
+                     q1 = vals[:,2],
+                     max = vals[:,5])
+
+    candlestick_chart(data, merge(args, {:legend=>nothing}))
+end
+
+## XXX This is broken. How to easily get names from GroupedDataFrame
+function boxplot(gp::GroupedDataFrame, args::Dict)
+    n = length(gp)
+    nms = (gp | :sum)[:,1] ## hack!
+    vals = [quantile(v[:,1], u) for v in gp, u in 0:.25:1]
+
+    data = DataFrame(names=nms,
+                     IQR = vals[:,1],
+                     q3 = vals[:,4],
+                     q1 = vals[:,2],
+                     max = vals[:,5])
+    
+   candlestick_chart(data, merge(args, {:title=>"boxplot", :legend=>nothing}))
+end
+   
+boxplot(x) = boxplot(x, Dict())
+
+function histogram(x::Vector, args::Dict; n::Integer=0)
+    
+    if n == 0
+        n = iceil(log2(length(x)) + 1) #  sturges from R
+    end
+    bins, counts = hist(x, n)
+
+    centers = (bins[1:end-1] + bins[2:end]) / 2
+    data = DataFrame(x=centers, counts=counts)
+
+    column_chart(data, merge(args, {:legend=>nothing,
+                                    :hAxis=>{:maxValue=>max(bins), :minValue=>min(bins)}, :bar=>{:groupWidth=>"99%"}}))
+end
+
+histogram(x::Vector; n::Integer=0) = histogram(x, Dict(); n=n)
+histogram(x::Vector) = histogram(x, Dict())
+    
     
