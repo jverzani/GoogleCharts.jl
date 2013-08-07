@@ -7,8 +7,8 @@ MaybeString = Union(Nothing, String)
 get_id() = "google_chart_" * join(int(10*rand(10)), "")
 
 
-## This wrapper for to_json allows us to override certain types
-two_json(x::Any) = to_json(x)
+## This wrapper for json allows us to override certain types
+two_json(x::Any) = json(x)
 function two_json(x::CalendarTime)
     ## Date(year, month, day, hours, minutes, seconds, milliseconds) ## need offsets!
     "new Date($(year(x)), $(month(x)-1), $(day(x)), $(hour(x)), $(minute(x)), $(second(x)), 0)"
@@ -23,7 +23,7 @@ add_column(id::String, nm::String, x::Bool)         = Mustache.render(column_tpl
 ## Make a google data table from a data frame object
 function make_data_array(id::String, d::DataFrame)
     wrap(x) = "[$x]"
-    make_row(x) = join([two_json(x[1,i]) for i in 1:ncol(d)], ", ") | wrap
+    make_row(x) = join([two_json(x[1,i]) for i in 1:ncol(d)], ", ") |> wrap
     out = ["new google.visualization.DataTable();"]
     nms = colnames(d)
     for i in 1:size(d)[2]
@@ -44,3 +44,17 @@ function open_url(url::String)
 end
         
         
+
+## IJulia support
+## Copy and paste this in
+# import Multimedia.writemime # change to Base.writemime once Julia #3932 is merged
+# function writemime(io::IO, ::@MIME("text/html"), p::GoogleCharts.CoreChart) 
+#     out = GoogleCharts.gadfly_format(p)
+#     ## don't like this, shouldn't have to add each time these lines
+#     out = "
+# <script type=\"text/javascript\" src=\"https://www.google.com/jsapi\"></script>
+# <script>setTimeout(function(){google.load('visualization', '1', {'callback':'', 'packages':['corechart']})}, 2);</script>
+# " *  GoogleCharts.gadfly_format(p)
+
+#     print(io, out)
+# end

@@ -5,7 +5,7 @@ function charttype_to_dict(chart::GoogleChart)
      :width=>chart.width,
      :height=>chart.height,
      :chart_data => chart.data,
-     :chart_options => JSON.to_json(chart.options)
+     :chart_options => JSON.json(chart.options)
      }
 end
 
@@ -69,4 +69,27 @@ render(io::Nothing, chart::GoogleChart, tpl::Union(Nothing, Mustache.MustacheTok
 render(io::Nothing, chart::GoogleChart) = render([chart], nothing)
 
 ## display to browser
-show(io::IO, chart::GoogleChart) = render(nothing, chart)
+Base.repl_show(io::IO, chart::GoogleChart) = render(nothing, chart)
+Base.show(io::IO, chart::GoogleChart) = print(io, "<plot>")
+
+## for using within Gadfly.weave:
+gadfly_weave_tpl = "
+<div id={{:id}} style=\"width:{{:width}}px; height:{{:height}}px;\"></div>
+<script>
+var {{:id}}_data = {{{:chart_data}}};
+var {{:id}}_options = {{{:chart_options}}};
+var {{:id}}_chart = new google.visualization.{{:chart_type}}(document.getElementById('{{:id}}'));{{:id}}_chart.draw({{:id}}_data,  {{:id}}_options);
+</script>
+"
+
+## this is used by weave...
+function gadfly_format(x::CoreChart)
+    d = {:id => x.id,
+         :width => 600,
+         :height => 400,
+         :chart_data => x.data,
+         :chart_options => json(x.options),
+         :chart_type => x.chart_type
+         }
+    Mustache.render(gadfly_weave_tpl, d)
+end
