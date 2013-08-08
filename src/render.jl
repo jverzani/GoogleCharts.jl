@@ -68,16 +68,6 @@ render(chart::GoogleChart) = render([chart])
 render(io::Nothing, chart::GoogleChart, tpl::Union(Nothing, Mustache.MustacheTokens)) = render([chart], tpl)
 render(io::Nothing, chart::GoogleChart) = render([chart], nothing)
 
-## display to browser
-function Base.repl_show(io::IO, chart::GoogleChart)
-    if io === STDOUT
-        render(nothing, chart)
-    else
-        show(io, chart)
-    end
-end
-Base.show(io::IO, chart::GoogleChart) = print(io, "<plot>")
-
 ## for using within Gadfly.weave:
 gadfly_weave_tpl = "
 <div id={{:id}} style=\"width:{{:width}}px; height:{{:height}}px;\"></div>
@@ -103,18 +93,48 @@ end
 
         
 
-## IJulia support
-## Until this migrates into Base, we need to copy and past this in to get graphics to work
-## within IJulia
-#
-# import Multimedia.writemime # change to Base.writemime once Julia #3932 is merged
-# function writemime(io::IO, ::@MIME("text/html"), p::GoogleCharts.CoreChart) 
-#     out = GoogleCharts.gadfly_format(p)
-#     ## don't like this, shouldn't have to add each time these lines
-#     out = "
-# <script type=\"text/javascript\" src=\"https://www.google.com/jsapi\"></script>
-# <script>setTimeout(function(){google.load('visualization', '1', {'callback':'', 'packages':['corechart']})}, 2);</script>
-# " *  GoogleCharts.gadfly_format(p)
 
-#     print(io, out)
-# end
+## IJulia support
+import Base.writemime
+export writemime
+
+writemime_tpl = "
+<script type=\"text/javascript\" src=\"https://www.google.com/jsapi\"></script>
+<div id={{:id}} style=\"width:{{:width}}px; height:{{:height}}px;\"></div>
+<script>
+function load_chart_{{:id}}() {
+var {{:id}}_data = {{{:chart_data}}};
+var {{:id}}_options = {{{:chart_options}}};
+var {{:id}}_chart = new google.visualization.{{:chart_type}}(document.getElementById('{{:id}}'));{{:id}}_chart.draw({{:id}}_data,  {{:id}}_options);
+}
+setTimeout(function(){
+  google.load('visualization', '1', {
+    'callback':load_chart_{{:id}},
+    'packages':['corechart']
+  }
+)}, 1);
+</script>
+"
+
+function writemime(io::IO, ::@MIME("text/html"), x::GoogleChart) 
+    d = {:id => x.id,
+         :width => 600,
+         :height => 400,
+         :chart_data => x.data,
+         :chart_options => json(x.options),
+         :chart_type => x.chart_type
+         }
+    out = Mustache.render(writemime_tpl, d)
+    print(io, out)
+end
+
+
+## display to browser, or writemime
+function Base.repl_show(io::IO, chart::GoogleChart)
+    if io === STDOUT
+        render(nothing, chart)
+    else
+        writemime(io, "text/html", chart)
+    end
+end
+Base.show(io::IO, chart::GoogleChart) = print(io, "<plot>")
