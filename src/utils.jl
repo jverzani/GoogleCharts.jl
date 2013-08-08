@@ -49,18 +49,3 @@ function open_url(url::String)
     @linux_only   run(`xdg-open $url`)
 end
         
-        
-
-## IJulia support
-## Copy and paste this in
-# import Multimedia.writemime # change to Base.writemime once Julia #3932 is merged
-# function writemime(io::IO, ::@MIME("text/html"), p::GoogleCharts.CoreChart) 
-#     out = GoogleCharts.gadfly_format(p)
-#     ## don't like this, shouldn't have to add each time these lines
-#     out = "
-# <script type=\"text/javascript\" src=\"https://www.google.com/jsapi\"></script>
-# <script>setTimeout(function(){google.load('visualization', '1', {'callback':'', 'packages':['corechart']})}, 2);</script>
-# " *  GoogleCharts.gadfly_format(p)
-
-#     print(io, out)
-# end

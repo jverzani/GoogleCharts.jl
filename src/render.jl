@@ -69,7 +69,13 @@ render(io::Nothing, chart::GoogleChart, tpl::Union(Nothing, Mustache.MustacheTok
 render(io::Nothing, chart::GoogleChart) = render([chart], nothing)
 
 ## display to browser
-Base.repl_show(io::IO, chart::GoogleChart) = render(nothing, chart)
+function Base.repl_show(io::IO, chart::GoogleChart)
+    if io === STDOUT
+        render(nothing, chart)
+    else
+        show(io, chart)
+    end
+end
 Base.show(io::IO, chart::GoogleChart) = print(io, "<plot>")
 
 ## for using within Gadfly.weave:
@@ -93,3 +99,22 @@ function gadfly_format(x::CoreChart)
          }
     Mustache.render(gadfly_weave_tpl, d)
 end
+
+
+        
+
+## IJulia support
+## Until this migrates into Base, we need to copy and past this in to get graphics to work
+## within IJulia
+#
+# import Multimedia.writemime # change to Base.writemime once Julia #3932 is merged
+# function writemime(io::IO, ::@MIME("text/html"), p::GoogleCharts.CoreChart) 
+#     out = GoogleCharts.gadfly_format(p)
+#     ## don't like this, shouldn't have to add each time these lines
+#     out = "
+# <script type=\"text/javascript\" src=\"https://www.google.com/jsapi\"></script>
+# <script>setTimeout(function(){google.load('visualization', '1', {'callback':'', 'packages':['corechart']})}, 2);</script>
+# " *  GoogleCharts.gadfly_format(p)
+
+#     print(io, out)
+# end
