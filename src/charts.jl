@@ -57,7 +57,7 @@ charts = (
           ,(:image_spark_line,    "ImageSparkLine",   ["imagesparkline"], Dict(),
             "https://developers.google.com/chart/interactive/docs/gallery/imagesparkline")
           )
-               
+
 ## Make constructors
 ## e.g.
 ## line_type(data, opts, width, height)
@@ -74,6 +74,12 @@ for (nm, ctype, packages, defaults, url) in charts
             obj
         end
         $(nm)(data::DataFrame, opts::MaybeDict) = $(nm)(data, opts, nothing, nothing)
+        function $(nm)(data::DataFrame, width::Int, height::Int; kwargs...) 
+            d = Dict()
+            [d[s]=v for (s,v) in kwargs]
+            $(nm)(data, d, width, height)
+        end
+        $(nm)(data::DataFrame; kwargs...) = $(nm)(data, 900, 600; kwargs...)
         $(nm)(data::DataFrame) = $(nm)(data, nothing, nothing, nothing)
     end
 end

@@ -16,6 +16,8 @@ options = {
            };
 chart = area_chart(area_data, options)
 render(chart)
+## or
+area_chart(area_data, title="Company Performance", haxis={:title => "Year",  :titleTextStyle => {:color => "red"}})
 
 
 ## Bar Chart
@@ -44,6 +46,13 @@ options = {
 
 chart = bubble_chart(bubble_data, options)
 render(chart)
+## or
+bubble_chart(bubble_data, 
+           title = "Correlation between life expectancy, fertility rate and population of some world countries (2010)",
+           hAxis = {:title => "Life Expectancy"},
+           vAxis = {:title => "Fertility Rate"},
+           bubble= {:textStyle => {:fontSize => 11}}
+           )
 
 ## candlestick_chart, 
 candle_data = DataFrame(quote

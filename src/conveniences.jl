@@ -12,12 +12,15 @@ function plot(io::Union(IO, String, Nothing), f::Function, a::Real, b::Real, arg
     colnames!(d, ["x", "y"])
 
     chart = line_chart(d, merge(args, {:curveType => "function"}), nothing, nothing)
-    #render(io, chart)
     chart
 end
 
 plot(f::Function, a::Real, b::Real, args::Dict) = plot(nothing, f, a, b, args)
-plot(f::Function, a::Real, b::Real) = plot(nothing, f, a, b, Dict())
+function plot(f::Function, a::Real, b::Real; kwargs...) 
+    d = Dict()
+    [d[s] = v for (s, v) in kwargs]
+    plot(nothing, f, a, b, d)
+end
 
 ## 1 or more functions at once
 function  plot(io::Union(IO, String, Nothing), fs::Vector{Function}, a::Real, b::Real, args::Dict)
@@ -40,7 +43,11 @@ function  plot(io::Union(IO, String, Nothing), fs::Vector{Function}, a::Real, b:
 end
 
 plot(fs::Vector{Function}, a::Real, b::Real, args::Dict) = plot(nothing, fs, a, b, args)
-plot(fs::Vector{Function}, a::Real, b::Real) = plot(nothing, fs, a, b, Dict())
+function plot(fs::Vector{Function}, a::Real, b::Real; kwargs...) 
+    d = Dict()
+    [d[s] = v for (s,v) in kwargs]
+    plot(nothing, fs, a, b, d)
+end
 
 ## plot x,y
 function plot{S <: Real, T <: Real}(io::Union(IO, String, Nothing),
@@ -54,15 +61,31 @@ function plot{S <: Real, T <: Real}(io::Union(IO, String, Nothing),
     chart
 end
 
+function plot{S <: Real, T <: Real}(io::Union(IO, String, Nothing),
+                                    x::Union(DataArray{S, 1}, Range1{S}, Vector{S}),
+                                    y::Union(DataArray{T, 1}, Range1{T}, Vector{T});
+                                    kwargs...)
+    d = Dict()
+    [d[s] = v for (s,v) in kwargs]
+    plot(io, x, y, d)
+end
+
 VectorLike = Union(DataArray, Range1, Vector)
 plot(x::VectorLike, y::VectorLike, args::Dict) = plot(nothing, x, y, args)
-plot(x::VectorLike, y::VectorLike) = plot(nothing, x, y, Dict())
+function plot(x::VectorLike, y::VectorLike; kwargs...) 
+    d = Dict()
+    [d[s] = v for (s,v) in kwargs]
+    plot(nothing, x, y, d)
+end
 
 ## Plots with data frames
 SymOrExpr = Union(Symbol, Expr)
 plot(x::SymOrExpr, y::SymOrExpr, data::DataFrame, args::Dict) = plot(with(data, x), with(data, y), args)
-plot(x::SymOrExpr, y::SymOrExpr, data::DataFrame) = plot(x, y, data, Dict())
-
+function plot(x::SymOrExpr, y::SymOrExpr, data::DataFrame; kwargs...) 
+    d = Dict()
+    [d[s] = v for (s,v) in kwargs]
+    plot(x, y, data, d)
+end
 
 ## Scatterplots
 function scatter(x::VectorLike, y::VectorLike, args::Dict)
@@ -70,10 +93,18 @@ function scatter(x::VectorLike, y::VectorLike, args::Dict)
     colnames!(d, ["x", "y"])
     scatter_chart(d, args)
 end
-scatter(x::VectorLike, y::VectorLike) = scatter(x, y, Dict())
+function scatter(x::VectorLike, y::VectorLike; kwargs...)
+     d = Dict()
+    [d[s] = v for (s,v) in kwargs]
+    scatter(x, y, d)
+end
 
 scatter(x::SymOrExpr, y::SymOrExpr, data::DataFrame, args::Dict) = scatter(with(data, x), with(data, y), args)
-scatter(x::SymOrExpr, y::SymOrExpr, data::DataFrame) = scatter(with(data, x), with(data, y), Dict())
+function scatter(x::SymOrExpr, y::SymOrExpr, data::DataFrame) 
+     d = Dict()
+    [d[s] = v for (s,v) in kwargs]
+    scatter(with(data, x), with(data, y), d)
+end
 
 
 function NaNWrap(idx::Integer, gp::GroupedDataFrame)
@@ -91,7 +122,11 @@ function scatter(gp::GroupedDataFrame, args::Dict)
     colnames!(d, ["x", [gp[i][1,3] for i in 1:n]])       
     scatter_chart(d, merge({:hAxis=>{:title=>colnames(gp[1])[1]}, :vAxis=>{:title=>colnames(gp[1])[2]}}, args))
 end
-scatter(gp::GroupedDataFrame)  = scatter(gp, Dict())    
+function scatter(gp::GroupedDataFrame; kwargs...) 
+    d = Dict()
+    [d[s] = v for (s,v) in kwargs]
+    scatter(gp, d)    
+end
 
 
 
@@ -151,6 +186,13 @@ function boxplot(x::Vector, args::Dict)
 
     candlestick_chart(data, merge(args, {:legend=>nothing}))
 end
+function boxplot(x::Vector; kwargs...)
+    d = Dict()
+    [d[s] = v for (s,v) in kwargs]
+    boxplot(x, d)
+end
+
+
 
 ## Not great, as ordering in d is not guaranteed
 function boxplot(d::Dict, args::Dict)
@@ -165,6 +207,11 @@ function boxplot(d::Dict, args::Dict)
                      max = vals[:,5])
 
     candlestick_chart(data, merge(args, {:legend=>nothing}))
+end
+function boxplot(D::Dict; kwargs...)
+    d = Dict()
+    [d[s] = v for (s,v) in kwargs]
+    boxplot(D, d)
 end
 
 ## XXX This is broken. How to easily get names from GroupedDataFrame
@@ -182,7 +229,6 @@ function boxplot(gp::GroupedDataFrame, args::Dict)
    candlestick_chart(data, merge(args, {:title=>"boxplot", :legend=>nothing}))
 end
    
-boxplot(x) = boxplot(x, Dict())
 
 function histogram(x::Vector, args::Dict; n::Integer=0)
     
@@ -197,8 +243,15 @@ function histogram(x::Vector, args::Dict; n::Integer=0)
     column_chart(data, merge(args, {:legend=>nothing,
                                     :hAxis=>{:maxValue=>max(bins), :minValue=>min(bins)}, :bar=>{:groupWidth=>"99%"}}))
 end
-
-histogram(x::Vector; n::Integer=0) = histogram(x, Dict(); n=n)
-histogram(x::Vector) = histogram(x, Dict())
+function histogram(x::Vector; n::Integer=0, kwargs...) 
+    d = Dict()
+    [d[s] = v for (s,v) in kwargs]
+    histogram(x, d, n=n)
+end
+function histogram(x::Vector; kwargs...) 
+    d = Dict()
+    [d[s] = v for (s,v) in kwargs]
+    histogram(x, d)
+end
     
     

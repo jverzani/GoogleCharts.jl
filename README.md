@@ -15,12 +15,15 @@ This package allows this to be done within `julia` by
 
 * mapping a `DataFrame` object into a Google DataTable. 
 
-* mapping a Dict of options into a JSON object of chart options
+* mapping a Dict of options into a JSON object of chart options. Many
+  of these options can be specified through keyword arguments.
 
 * providing various constructors to make the type of chart
 
-* providing a `render` method to draw the chart (or charts) to an
-  IOStream, a file or to a page in a local web browser. 
+* providing a method to see the charts. From `IJulia` this happens
+  automatically. From the command line, plots are rendered to a local
+  browser through `repl_show`. In general, the `render` method can
+  draw the chart or charts to an IOStream or file.
 
 A basic usage (see the test/ directory for more)
 
@@ -46,6 +49,13 @@ chart = scatter_chart(scatter_data, options);
 render(chart)   ## displays in browser. 
 ```
 
+For non-nested options, keyword arguments can be given, as opposed to a dictionary:
+
+```
+chart = scatter_chart(scatter_data, title="Age vs. Weight comparison")
+```
+
+
 
 There are constructors for the following charts 
 (cf. [Charts Gallery](https://developers.google.com/chart/interactive/docs/gallery))
@@ -70,7 +80,8 @@ The options are specified through a `Dict` which is translated into
 JSON by `JSON.to_json`. There are *numerous* options described in the
 "Configuration Options" section of each chart's web page. Some useful
 ones are shown in the example to set labels for the variables and the
-viewport. Google charts seem to like integer ranges in the viewports by default.
+viewport. Google charts seem to like integer ranges in the viewports
+by default.  Top-level properties, can be set using keyword arguments.
 
 In the `tests/` subdirectory is a file with implementations with this
 package of the basic examples from Google's web pages. Some additional
@@ -79,8 +90,8 @@ examples of configurations can be found there.
 The `render` method can draw a chart to an IOStream, a specified
 filename, or (when used as above) to a web page that is displayed
 locally. One can specify more than one chart at a time using a vector
-of charts. We have defined the `show` method to render the chart in
-the browser.
+of charts. We have defined the `repl_show` method to render the chart in
+the browser and `writemime` to render within an `IJulia` notebook.
 
 ### A plot function
 
@@ -93,10 +104,10 @@ plot(sin, 0, 2pi)
 A vector of functions:
 
 ```
-plot([sin, u -> cos(u) > 0 ? 0 : NaN], 0, 2pi, {:lineWidth=>5, 
-	                                        :title=>"A function and where its derivative is positive",
-						:vAxis=>{:minValue => -1.2, :maxValue => 1.2}
-						})
+plot([sin, u -> cos(u) > 0 ? 0 : NaN], 0, 2pi, 
+	   lineWidth=5, 
+	   title="A function and where its derivative is positive",
+           vAxis={:minValue => -1.2, :maxValue => 1.2})
 ```
 
 The `plot` function uses a `line_chart`. The above example shows that 
@@ -108,7 +119,7 @@ Plot also works for paired vectors:
 x = linspace(0, 1., 20)
 y = rand(20)
 plot(x, y)			         # dot-to-dot plot
-plot(x, y, {:curveType => "function"})   # smooths things out
+plot(x, y, curveType="function")         # smooths things out
 ```
 
 ### scatter plots

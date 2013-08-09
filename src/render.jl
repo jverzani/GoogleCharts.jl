@@ -98,6 +98,7 @@ end
 import Base.writemime
 export writemime
 
+## read https://developers.google.com/loader/#GoogleLoad to see if this can be tidied up
 writemime_tpl = "
 <script type=\"text/javascript\" src=\"https://www.google.com/jsapi\"></script>
 <div id={{:id}} style=\"width:{{:width}}px; height:{{:height}}px;\"></div>
