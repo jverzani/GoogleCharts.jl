@@ -113,7 +113,7 @@ setTimeout(function(){
     'callback':load_chart_{{:id}},
     'packages':['corechart']
   }
-)}, 1);
+)}, 250);
 </script>
 "
 
