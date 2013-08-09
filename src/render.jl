@@ -100,7 +100,6 @@ export writemime
 
 ## read https://developers.google.com/loader/#GoogleLoad to see if this can be tidied up
 writemime_tpl = "
-<script type=\"text/javascript\" src=\"https://www.google.com/jsapi\"></script>
 <div id={{:id}} style=\"width:{{:width}}px; height:{{:height}}px;\"></div>
 <script>
 function load_chart_{{:id}}() {
@@ -113,7 +112,7 @@ setTimeout(function(){
     'callback':load_chart_{{:id}},
     'packages':['corechart']
   }
-)}, 250);
+)}, 10);
 </script>
 "
 
@@ -127,6 +126,13 @@ function writemime(io::IO, ::@MIME("text/html"), x::GoogleChart)
          }
     out = Mustache.render(writemime_tpl, d)
     print(io, out)
+end
+
+## inject code into browser if displayable
+if displayable("text/html")
+    display("text/html", """
+<script type=\"text/javascript\" src=\"https://www.google.com/jsapi\"></script>
+""")
 end
 
 
