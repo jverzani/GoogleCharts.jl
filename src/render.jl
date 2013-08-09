@@ -131,7 +131,10 @@ end
 ## inject code into browser if displayable
 if displayable("text/html")
     display("text/html", """
-<script type=\"text/javascript\" src=\"https://www.google.com/jsapi\"></script>
+<script type='text/javascript' src='https://www.google.com/jsapi'></script>
+<script type='text/javascript' src='http://javascript-surface-plot.googlecode.com/svn/trunk/javascript/SurfacePlot.js'></script>
+<script type='text/javascript' src='http://javascript-surface-plot.googlecode.com/svn/trunk/javascript/ColourGradient.js'></script>
+
 """)
 end
 
@@ -144,4 +147,4 @@ function Base.repl_show(io::IO, chart::GoogleChart)
         writemime(io, "text/html", chart)
     end
 end
-Base.show(io::IO, chart::GoogleChart) = print(io, "<plot>")
+# Base.show(io::IO, chart::GoogleChart) = print(io, "<plot>")

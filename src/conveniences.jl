@@ -1,3 +1,6 @@
+## Convenience functions
+## unlike the charts, these take an IO object to plot 
+
 ## Plot a function
 ## GoogleCharts does not like Inf values, but handles NaN gracefully. We replace
 ## args like {:title=>"My title"}
@@ -12,7 +15,8 @@ function plot(io::Union(IO, String, Nothing), f::Function, a::Real, b::Real, arg
     colnames!(d, ["x", "y"])
 
     chart = line_chart(d, merge(args, {:curveType => "function"}), nothing, nothing)
-    chart
+    io == nothing ? redisplay(chart)  : render(io, chart)
+    nothing
 end
 
 plot(f::Function, a::Real, b::Real, args::Dict) = plot(nothing, f, a, b, args)
@@ -38,8 +42,9 @@ function  plot(io::Union(IO, String, Nothing), fs::Vector{Function}, a::Real, b:
     colnames!(d, ["x", ["f$i" for i in 1:length(fs)]])
         
     chart = line_chart(d, merge(args, {:curveType => "function"}), nothing, nothing)
-    #render(io, chart)
-    chart
+
+    io == nothing ? redisplay(chart) : render(io, chart)
+    nothing
 end
 
 plot(fs::Vector{Function}, a::Real, b::Real, args::Dict) = plot(nothing, fs, a, b, args)
@@ -58,7 +63,8 @@ function plot{S <: Real, T <: Real}(io::Union(IO, String, Nothing),
     colnames!(d, ["x", "y"])
 
     chart = line_chart(d, args, nothing, nothing)
-    chart
+    io == nothing ? redisplay(chart) : render(io, chart)
+    nothing
 end
 
 function plot{S <: Real, T <: Real}(io::Union(IO, String, Nothing),
@@ -88,23 +94,40 @@ function plot(x::SymOrExpr, y::SymOrExpr, data::DataFrame; kwargs...)
 end
 
 ## Scatterplots
-function scatter(x::VectorLike, y::VectorLike, args::Dict)
+function scatter(io::Union(IO, String, Nothing),
+                 x::VectorLike, y::VectorLike, 
+                 args::Dict)
     d = cbind(DataFrame(), x, y)
     colnames!(d, ["x", "y"])
-    scatter_chart(d, args)
+    chart = scatter_chart(d, args)
+    io == nothing ? redisplay(chart) : render(io, chart)
+    nothing
 end
-function scatter(x::VectorLike, y::VectorLike; kwargs...)
-     d = Dict()
+scatter(x::VectorLike, y::VectorLike, args::Dict) = scatter(nothing, x, y, args)
+
+function scatter(io::Union(IO, String, Nothing),
+                 x::VectorLike, y::VectorLike; kwargs...)
+    d = Dict()
     [d[s] = v for (s,v) in kwargs]
-    scatter(x, y, d)
+    chart = scatter(x, y, d)
+    io == nothing ? redisplay(chart) : render(io, chart)
+    nothing
+end
+scatter(x::VectorLike, y::VectorLike; kwargs...) = scatter(nothing, x, y; kwargs...)
+
+function scatter(io::Union(IO, String, Nothing), x::SymOrExpr, y::SymOrExpr, data::DataFrame, args::Dict) 
+    scatter(io, with(data, x), with(data, y), args)
 end
 
-scatter(x::SymOrExpr, y::SymOrExpr, data::DataFrame, args::Dict) = scatter(with(data, x), with(data, y), args)
-function scatter(x::SymOrExpr, y::SymOrExpr, data::DataFrame) 
-     d = Dict()
+scatter(x::SymOrExpr, y::SymOrExpr, data::DataFrame, args::Dict) = scatter(nothing, with(data, x), with(data, y), args)
+
+function scatter(io::Union(IO, String, Nothing),
+                 x::SymOrExpr, y::SymOrExpr, data::DataFrame; kwargs...) 
+    d = Dict()
     [d[s] = v for (s,v) in kwargs]
-    scatter(with(data, x), with(data, y), d)
+    scatter(io, with(data, x), with(data, y), d)
 end
+scatter(x::SymOrExpr, y::SymOrExpr, data::DataFrame; kwargs...) = scatter(nothing, x, y, data; kwargs...)
 
 
 function NaNWrap(idx::Integer, gp::GroupedDataFrame)
@@ -116,35 +139,24 @@ end
 ## d=iris[:, [2,3,6]]
 ## gp = groupby(d, "i")
 ## scatter(gp)
-function scatter(gp::GroupedDataFrame, args::Dict)
+function scatter(io::Union(IO, String, Nothing), gp::GroupedDataFrame, args::Dict)
     n = length(gp)
     d = cbind(DataFrame(),[[gp[i][:,1] for i in 1:n]...],[NaNWrap(i, gp) for i in 1:n]...)
     colnames!(d, ["x", [gp[i][1,3] for i in 1:n]])       
-    scatter_chart(d, merge({:hAxis=>{:title=>colnames(gp[1])[1]}, :vAxis=>{:title=>colnames(gp[1])[2]}}, args))
+    chart = scatter_chart(d, merge({:hAxis=>{:title=>colnames(gp[1])[1]}, :vAxis=>{:title=>colnames(gp[1])[2]}}, args))
+    io == nothing ? redisplay(chart) : render(io, chart)
+    nothing
 end
-function scatter(gp::GroupedDataFrame; kwargs...) 
+scatter(gp::GroupedDataFrame, args::Dict) = scatter(nothing, gp, args)
+function scatter(io::Union(IO, String, Nothing), gp::GroupedDataFrame; kwargs...) 
     d = Dict()
     [d[s] = v for (s,v) in kwargs]
-    scatter(gp, d)    
+    scatter(io, gp, d)    
 end
+scatter(gp::GroupedDataFrame; kwargs...)  = scatter(nothing, gp; kwargs...)
 
 
 
-
-## Surface plot is *all* different integrate in later
-function surfaceplot(f::Function, x::Vector, y::Vector)
-    chart_id = get_id()
-    d = DataFrame(Float64[f(x,y) for x in x, y in y])
-    tool_tip(x,y) = "(" * (map(u -> round(u, 2), [x,y,f(x,0)]) | u -> join(u, ", ")) * ")"
-    tooltips = [tool_tip(x,y) for x in x, y in y] | u -> reshape(u, length(x)*length(y)) | JSON.json
-
-    tpl = Mustache.template_from_file(Pkg.dir("GoogleCharts", "tpl", "surface.html"))
-    f = tempname() * ".html"
-    io = open(f, "w")
-    Mustache.render(io, tpl, {:datatable => make_data_array(chart_id, d), :tooltips=>tooltips, :chart_id=>chart_id})
-    close(io)
-    open_url(f)
-end
 
 
 
@@ -173,7 +185,7 @@ end
 
 ## Boxplot only shows five number summary, no marking of outliers
 ## in fact, no marking of the median!
-function boxplot(x::Vector, args::Dict)
+function boxplot(io::Union(IO, String, Nothing), x::Vector, args::Dict)
     # stats = boxplot_stats(x)
     sort!(x)
     stats = quantile(x, 0:1/4:1)
@@ -184,18 +196,22 @@ function boxplot(x::Vector, args::Dict)
                      max= stats[5]
                      )
 
-    candlestick_chart(data, merge(args, {:legend=>nothing}))
+    chart = candlestick_chart(data, merge(args, {:legend=>nothing}))
+    io == nothing ? redisplay(chart) : render(io, chart)
+    nothing
 end
-function boxplot(x::Vector; kwargs...)
+boxplot(x::Vector, args::Dict) = boxplot(nothing, x, args)
+
+function boxplot(io::Union(IO, String, Nothing), x::Vector; kwargs...)
     d = Dict()
     [d[s] = v for (s,v) in kwargs]
-    boxplot(x, d)
+    boxplot(io, x, d)
 end
-
+boxplot(x::Vector; kwargs...) = boxplot(nothing, x; kwargs...)
 
 
 ## Not great, as ordering in d is not guaranteed
-function boxplot(d::Dict, args::Dict)
+function boxplot(io::Union(IO, String, Nothing), d::Dict, args::Dict)
     ## not efficient, but whatever
     nms = String[string(k) for k in keys(d)]
     vals = [quantile(v, u) for (k,v) in d, u in 0:.25:1] |> float
@@ -206,16 +222,20 @@ function boxplot(d::Dict, args::Dict)
                      q1 = vals[:,2],
                      max = vals[:,5])
 
-    candlestick_chart(data, merge(args, {:legend=>nothing}))
+    chart = candlestick_chart(data, merge(args, {:legend=>nothing}))
+    io == nothing ? redisplay(chart) : render(io, chart)
+    nothing
 end
-function boxplot(D::Dict; kwargs...)
+boxplot(d::Dict, args::Dict) = boxplot(nothing, d, args)
+function boxplot(io::Union(IO, String, Nothing), D::Dict; kwargs...)
     d = Dict()
     [d[s] = v for (s,v) in kwargs]
-    boxplot(D, d)
+    boxplot(io, D, d)
 end
+boxplot(d::Dict; kwargs...) = boxplot(nothing, d; kwargs...)
 
 ## XXX This is broken. How to easily get names from GroupedDataFrame
-function boxplot(gp::GroupedDataFrame, args::Dict)
+function boxplot(io::Union(IO, String, Nothing), gp::GroupedDataFrame, args::Dict)
     n = length(gp)
     nms = (gp | :sum)[:,1] ## hack!
     vals = [quantile(v[:,1], u) for v in gp, u in 0:.25:1]
@@ -226,11 +246,20 @@ function boxplot(gp::GroupedDataFrame, args::Dict)
                      q1 = vals[:,2],
                      max = vals[:,5])
     
-   candlestick_chart(data, merge(args, {:title=>"boxplot", :legend=>nothing}))
+    chart = candlestick_chart(data, merge(args, {:title=>"boxplot", :legend=>nothing}))
+    io == nothing ? redisplay(chart) : render(io, chart)
+    nothing
 end
-   
+boxplot(gp::GroupedDataFrame, args::Dict) = boxplot(gp, args)
+function boxplot(io::Union(IO, String, Nothing), gp::GroupedDataFrame; kwargs...)
+    d = Dict()
+    [d[s] = v for (s,v) in kwargs]
+    boxplot(io, gp, d)
+end
+boxplot(gp::GroupedDataFrame; kwargs...) = boxplot(nothing, gp; kwargs...)
 
-function histogram(x::Vector, args::Dict; n::Integer=0)
+### histogram
+function histogram(io::Union(IO, String, Nothing), x::Vector, args::Dict; n::Integer=0)
     
     if n == 0
         n = iceil(log2(length(x)) + 1) #  sturges from R
@@ -240,18 +269,106 @@ function histogram(x::Vector, args::Dict; n::Integer=0)
     centers = (bins[1:end-1] + bins[2:end]) / 2
     data = DataFrame(x=centers, counts=counts)
 
-    column_chart(data, merge(args, {:legend=>nothing,
-                                    :hAxis=>{:maxValue=>max(bins), :minValue=>min(bins)}, :bar=>{:groupWidth=>"99%"}}))
+    chart = column_chart(data, merge(args, {:legend=>nothing,
+                                            :hAxis=>{:maxValue=>max(bins), :minValue=>min(bins)}, :bar=>{:groupWidth=>"99%"}}))
+
+    io == nothing ? redisplay(chart) : render(io, chart)
+    nothing
 end
-function histogram(x::Vector; n::Integer=0, kwargs...) 
+histogram(x::Vector, args::Dict; n::Integer=0) = histogram(nothing, io, args, n=n)
+
+function histogram(io::Union(IO, String, Nothing), x::Vector; n::Integer=0, kwargs...) 
     d = Dict()
     [d[s] = v for (s,v) in kwargs]
-    histogram(x, d, n=n)
+    histogram(io, x, d, n=n)
 end
-function histogram(x::Vector; kwargs...) 
+histogram(x::Vector; n::Integer=0, kwargs...) = histogram(nothing, x; n=n, kwargs...)
+
+function histogram(io::Union(IO, String, Nothing), x::Vector; kwargs...) 
     d = Dict()
     [d[s] = v for (s,v) in kwargs]
-    histogram(x, d)
+    histogram(io, x, d)
 end
+histogram(x::Vector; kwargs...)  = histogram(nothing, x; kwargs...)
     
-    
+
+
+
+##################################################
+
+## Surface plot is different. XXX We need to be able to pass in arguments below
+surface_tpl = """
+var tooltipStrings = {{{:tooltips}}};
+var {{:chart_id}}_data = {{{:datatable}}}
+         var surfacePlot = new greg.ross.visualisation.SurfacePlot(document.getElementById("surfacePlotDiv_{{:chart_id}}"));
+
+         // Don't fill polygons in IE. It's too slow.
+         var fillPly = true;
+
+         // Define a colour gradient.
+         var colour1 = {red:0, green:0, blue:255};
+         var colour2 = {red:0, green:255, blue:255};
+         var colour3 = {red:0, green:255, blue:0};
+         var colour4 = {red:255, green:255, blue:0};
+         var colour5 = {red:255, green:0, blue:0};
+         var colours = [colour1, colour2, colour3, colour4, colour5];
+
+         // Axis labels.
+         var xAxisHeader = "X";
+         var yAxisHeader = "Y";
+         var zAxisHeader = "Z";
+
+         var options = {width: 500, height: 500, colourGradient: colours,
+           fillPolygons: fillPly, tooltips: tooltipStrings, xTitle: xAxisHeader,
+           yTitle: yAxisHeader, zTitle: zAxisHeader, restrictXRotation: false};
+                
+        surfacePlot.draw({{:chart_id}}_data, options);
+"""
+
+type SurfacePlot
+    x::Dict
+end
+
+function render(io, p::SurfacePlot)
+    plt = Mustache.render(surface_tpl, p.x)
+
+    tpl = Mustache.template_from_file(Pkg.dir("GoogleCharts", "tpl", "surface.html"))
+    f = tempname() * ".html"
+    io = open(f, "w")
+    Mustache.render(io, tpl, {:surfaceplot=>plt, :chart_id=>p.x[:chart_id]})
+    close(io)
+    open_url(f)
+end
+
+function Base.repl_show(io::IO, p::SurfacePlot)
+    if io === STDOUT
+        render(nothing, p)
+    else
+        writemime(io, "text/html", p)
+    end
+end
+function writemime(io::IO, ::@MIME("text/html"), p::SurfacePlot) 
+    plt = Mustache.render(surface_tpl, p.x)
+    out = """
+<div id='surfacePlotDiv_$(p.x[:chart_id])' style="width:500px; height:500px;"></div>
+<script type="text/javascript">
+$plt
+</script>
+"""
+    print(io, out)
+end
+
+## XXX This needs a way to pass options in ...
+function surfaceplot(io::Union(IO, String, Nothing), f::Function, x::Vector, y::Vector)
+    chart_id = get_id()
+    d = DataFrame(Float64[f(x,y) for x in x, y in y])
+    tool_tip(x,y) = "(" * (map(u -> round(u, 2), [x,y,f(x,0)]) |> u -> join(u, ", ")) * ")"
+    tooltips = [tool_tip(x,y) for x in x, y in y] |> u -> reshape(u, length(x)*length(y)) |> JSON.json
+    chart = SurfacePlot({:datatable => make_data_array(chart_id, d), 
+                         :tooltips=>tooltips, 
+                         :chart_id=>chart_id} # XXX :options=>JSON.json({...})
+                        )
+    io == nothing ? redisplay(chart) : render(io, chart)
+    nothing
+end
+surfaceplot(f::Function, x::Vector, y::Vector) = surfaceplot(nothing, f, x, y)
