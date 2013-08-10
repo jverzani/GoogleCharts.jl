@@ -318,9 +318,16 @@ var {{:chart_id}}_data = {{{:datatable}}}
          var yAxisHeader = "Y";
          var zAxisHeader = "Z";
 
-         var options = {width: 500, height: 500, colourGradient: colours,
-           fillPolygons: fillPly, tooltips: tooltipStrings, xTitle: xAxisHeader,
-           yTitle: yAxisHeader, zTitle: zAxisHeader, restrictXRotation: false};
+         var options = {
+           xPos: {{:xPos}},
+           yPos: {{:yPos}},
+           width: {{:width}}, 
+           height: {{:height}}, 
+           colourGradient: colours,
+           fillPolygons: fillPly, tooltips: tooltipStrings, 
+           xTitle: xAxisHeader,yTitle: yAxisHeader, zTitle: zAxisHeader, 
+           restrictXRotation: false
+         };
                 
         surfacePlot.draw({{:chart_id}}_data, options);
 """
@@ -359,16 +366,24 @@ $plt
 end
 
 ## XXX This needs a way to pass options in ...
-function surfaceplot(io::Union(IO, String, Nothing), f::Function, x::Vector, y::Vector)
+function surfaceplot(io::Union(IO, String, Nothing), f::Function, x::Vector, y::Vector;
+                     xPos::Real=0,
+                     yPos::Real=0,
+                     width::Int=600,
+                     height::Int=400      
+
+)
     chart_id = get_id()
     d = DataFrame(Float64[f(x,y) for x in x, y in y])
     tool_tip(x,y) = "(" * (map(u -> round(u, 2), [x,y,f(x,0)]) |> u -> join(u, ", ")) * ")"
     tooltips = [tool_tip(x,y) for x in x, y in y] |> u -> reshape(u, length(x)*length(y)) |> JSON.json
     chart = SurfacePlot({:datatable => make_data_array(chart_id, d), 
                          :tooltips=>tooltips, 
-                         :chart_id=>chart_id} # XXX :options=>JSON.json({...})
-                        )
+                         :chart_id=>chart_id,
+                         :xPos=>xPos, :yPos=>yPos,
+                         :width=>width, :height=>height
+                         })
     io == nothing ? redisplay(chart) : render(io, chart)
     nothing
 end
-surfaceplot(f::Function, x::Vector, y::Vector) = surfaceplot(nothing, f, x, y)
+surfaceplot(f::Function, x::Vector, y::Vector; kwargs...)   = surfaceplot(nothing, f, x, y; kwargs...)

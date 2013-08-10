@@ -69,14 +69,14 @@ render(io::Nothing, chart::GoogleChart, tpl::Union(Nothing, Mustache.MustacheTok
 render(io::Nothing, chart::GoogleChart) = render([chart], nothing)
 
 ## for using within Gadfly.weave:
-gadfly_weave_tpl = "
-<div id={{:id}} style=\"width:{{:width}}px; height:{{:height}}px;\"></div>
+gadfly_weave_tpl = """
+<div id={{:id}} style="width:{{:width}}px; height:{{:height}}px;"></div>
 <script>
 var {{:id}}_data = {{{:chart_data}}};
 var {{:id}}_options = {{{:chart_options}}};
 var {{:id}}_chart = new google.visualization.{{:chart_type}}(document.getElementById('{{:id}}'));{{:id}}_chart.draw({{:id}}_data,  {{:id}}_options);
 </script>
-"
+"""
 
 ## this is used by weave...
 function gadfly_format(x::CoreChart)
@@ -99,8 +99,8 @@ import Base.writemime
 export writemime
 
 ## read https://developers.google.com/loader/#GoogleLoad to see if this can be tidied up
-writemime_tpl = "
-<div id={{:id}} style=\"width:{{:width}}px; height:{{:height}}px;\"></div>
+writemime_tpl = """
+<div id={{:id}} style="width:{{:width}}px; height:{{:height}}px;"></div>
 <script>
 function load_chart_{{:id}}() {
 var {{:id}}_data = {{{:chart_data}}};
@@ -114,7 +114,7 @@ setTimeout(function(){
   }
 )}, 10);
 </script>
-"
+"""
 
 function writemime(io::IO, ::@MIME("text/html"), x::GoogleChart) 
     d = {:id => x.id,
@@ -131,10 +131,9 @@ end
 ## inject code into browser if displayable
 if displayable("text/html")
     display("text/html", """
-<script type='text/javascript' src='https://www.google.com/jsapi'></script>
 <script type='text/javascript' src='http://javascript-surface-plot.googlecode.com/svn/trunk/javascript/SurfacePlot.js'></script>
 <script type='text/javascript' src='http://javascript-surface-plot.googlecode.com/svn/trunk/javascript/ColourGradient.js'></script>
-
+<script type='text/javascript' src='https://www.google.com/jsapi'></script>
 """)
 end
 
