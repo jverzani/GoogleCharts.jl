@@ -122,6 +122,14 @@ plot(x, y)			         # dot-to-dot plot
 plot(x, y, curveType="function")         # smooths things out
 ```
 
+### parametric plots
+
+Passing a tuple of functions will produce a parametric plot:
+
+```
+plot([x -> sin(2x), cos], 0, 2pi)
+```
+
 ### scatter plots
 
 The latter shows that `plot` assumes your data is a discrete
@@ -160,6 +168,9 @@ Some experimental code is in place for surface plots. It needs work. The basic u
 ```
 surfaceplot((x,y) -> x^2 + y^2, linspace(0,1,20), linspace(0,2,20))
 ```
+
+The above does not seem to work in many browsers and does not work reliably in `IJulia` (only success has been with Chrome and that is being deprecated).
+
 
 ### TODO
 

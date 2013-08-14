@@ -129,14 +129,20 @@ function writemime(io::IO, ::@MIME("text/html"), x::GoogleChart)
 end
 
 ## inject code into browser if displayable
-if displayable("text/html")
-    display("text/html", """
-<script type='text/javascript' src='http://javascript-surface-plot.googlecode.com/svn/trunk/javascript/SurfacePlot.js'></script>
-<script type='text/javascript' src='http://javascript-surface-plot.googlecode.com/svn/trunk/javascript/ColourGradient.js'></script>
-<script type='text/javascript' src='https://www.google.com/jsapi'></script>
+inject_javascript() = display("text/html", """
+    <script type='text/javascript' src='https://www.google.com/jsapi'></script>
 """)
+        
+## inject when package is loaded
+if displayable("text/html")
+    inject_javascript()
 end
 
+## in case surface plot is desired (not reliable)
+inject_surfaceplot_javascript = display("text/html", """
+    <script type='text/javascript' src='http://javascript-surface-plot.googlecode.com/svn/trunk/javascript/SurfacePlot.js'></script>
+    <script type='text/javascript' src='http://javascript-surface-plot.googlecode.com/svn/trunk/javascript/ColourGradient.js'></script>
+        """)
 
 ## display to browser, or writemime
 function Base.repl_show(io::IO, chart::GoogleChart)

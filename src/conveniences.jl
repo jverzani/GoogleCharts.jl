@@ -54,6 +54,22 @@ function plot(fs::Vector{Function}, a::Real, b::Real; kwargs...)
     plot(nothing, fs, a, b, d)
 end
 
+## parametric plots -- tuples of functions
+function plot(io::Union(IO, String, Nothing), fs::Tuple, a::Real, b::Real, args::Dict)
+    u = linspace(a, b, 250)
+    x = map(fs[1], u)
+    y = map(fs[2], u)
+    args[:curveType] = "function"
+    plot(io, x, y, args)
+end
+plot( fs::Tuple, a::Real, b::Real, args::Dict)=plot(nothing, fs, a, b, args)
+function plot(io::Union(IO, String, Nothing), fs::Tuple, a::Real, b::Real; kwargs...)
+    d = Dict()
+    [d[s] = v for (s,v) in kwargs]
+    plot(io, fs, a, b, d)
+end
+plot( fs::Tuple, a::Real, b::Real; kwargs...)=plot(nothing, fs, a, b;  kwargs...)
+
 ## plot x,y
 function plot{S <: Real, T <: Real}(io::Union(IO, String, Nothing),
                                     x::Union(DataArray{S, 1}, Range1{S}, Vector{S}),
