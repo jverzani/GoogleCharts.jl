@@ -11,10 +11,9 @@ end
 
 ## take vector of google charts
 function charts_to_dict(charts)
+    packages = union([chart.packages for chart in charts]...)
 
-    packages = string(union([chart.packages for chart in charts]...))
-    
-   {:chart_packages => packages,
+   {:chart_packages => JSON.json(packages),
     :charts => [charttype_to_dict(chart) for chart in charts],
     :chart_xtra => join([chart.xtra for chart in charts],"\n")
    }
@@ -116,7 +115,7 @@ setTimeout(function(){
 </script>
 """
 
-function writemime(io::IO, ::@MIME("text/html"), x::GoogleChart) 
+function writemime(io::IO, ::MIME"text/html", x::GoogleChart) 
     d = {:id => x.id,
          :width => 600,
          :height => 400,
@@ -139,13 +138,14 @@ if displayable("text/html")
 end
 
 ## in case surface plot is desired (not reliable)
-inject_surfaceplot_javascript = display("text/html", """
-    <script type='text/javascript' src='http://javascript-surface-plot.googlecode.com/svn/trunk/javascript/SurfacePlot.js'></script>
-    <script type='text/javascript' src='http://javascript-surface-plot.googlecode.com/svn/trunk/javascript/ColourGradient.js'></script>
-        """)
+# inject_surfaceplot_javascript = Base.display("text/html", """
+#     <script type='text/javascript' src='http://javascript-surface-plot.googlecode.com/svn/trunk/javascript/SurfacePlot.js'></script>
+#     <script type='text/javascript' src='http://javascript-surface-plot.googlecode.com/svn/trunk/javascript/ColourGradient.js'></script>
+#         """)
 
 ## display to browser, or writemime
-function Base.repl_show(io::IO, chart::GoogleChart)
+#function Base.repl_show(io::IO, chart::GoogleChart)
+function writemime(io::IO, ::MIME"text/plain", chart::GoogleChart)
     if io === STDOUT
         render(nothing, chart)
     else

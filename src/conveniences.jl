@@ -370,7 +370,7 @@ function Base.repl_show(io::IO, p::SurfacePlot)
         writemime(io, "text/html", p)
     end
 end
-function writemime(io::IO, ::@MIME("text/html"), p::SurfacePlot) 
+function writemime(io::IO, ::MIME"text/html", p::SurfacePlot) 
     plt = Mustache.render(surface_tpl, p.x)
     out = """
 <div id='surfacePlotDiv_$(p.x[:chart_id])' style="width:500px; height:500px;"></div>

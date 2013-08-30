@@ -5,7 +5,8 @@ using JSON
 using DataFrames
 using Calendar
 
-import Base.show
+import Base.show, Base.display
+
 
 include("utils.jl")
 include("charts.jl")
