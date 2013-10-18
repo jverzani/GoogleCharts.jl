@@ -127,7 +127,7 @@ plot(x, y, curveType="function")         # smooths things out
 Passing a tuple of functions will produce a parametric plot:
 
 ```
-plot([x -> sin(2x), cos], 0, 2pi)
+plot((x -> sin(2x), cos), 0, 2pi)
 ```
 
 ### scatter plots

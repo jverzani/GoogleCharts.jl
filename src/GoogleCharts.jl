@@ -3,7 +3,7 @@ module GoogleCharts
 using Mustache
 using JSON
 using DataFrames
-using Calendar
+using Datetime
 
 import Base.show, Base.display
 

@@ -286,7 +286,7 @@ function histogram(io::Union(IO, String, Nothing), x::Vector, args::Dict; n::Int
     data = DataFrame(x=centers, counts=counts)
 
     chart = column_chart(data, merge(args, {:legend=>nothing,
-                                            :hAxis=>{:maxValue=>max(bins), :minValue=>min(bins)}, :bar=>{:groupWidth=>"99%"}}))
+                                            :hAxis=>{:maxValue=>maximum(bins), :minValue=>minimum(bins)}, :bar=>{:groupWidth=>"99%"}}))
 
     io == nothing ? redisplay(chart) : render(io, chart)
     nothing

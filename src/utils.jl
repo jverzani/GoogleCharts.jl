@@ -15,14 +15,14 @@ get_id() = "google_chart_" * join(int(10*rand(10)), "")
 
 ## This wrapper for json allows us to override certain types
 two_json(x::Any) = json(x)
-function two_json(x::CalendarTime)
+function two_json(x::DateTime)
     ## Date(year, month, day, hours, minutes, seconds, milliseconds) ## need offsets!
-    "new Date($(year(x)), $(month(x)-1), $(day(x)), $(hour(x)), $(minute(x)), $(second(x)), 0)"
+    "new Date($(year(x)), $(month(x)), $(day(x)), $(hour(x)), $(minute(x)), $(second(x)), 0)"
 end
 
 column_tpl = mt"{{{:id}}}_data.addColumn(\"{{:type}}\", \"{{:name}}\");"
 add_column(id::String, nm::String, x)               = Mustache.render(column_tpl, {:id=>id, :type=>"string",   :name=>nm})
-add_column(id::String, nm::String, x::CalendarTime) = Mustache.render(column_tpl, {:id=>id, :type=>"datetime", :name=>nm})
+add_column(id::String, nm::String, x::DateTime)         = Mustache.render(column_tpl, {:id=>id, :type=>"datetime", :name=>nm})
 add_column(id::String, nm::String, x::Number)       = Mustache.render(column_tpl, {:id=>id, :type=>"number",   :name=>nm})
 add_column(id::String, nm::String, x::Bool)         = Mustache.render(column_tpl, {:id=>id, :type=>"boolean",  :name=>nm})
 
