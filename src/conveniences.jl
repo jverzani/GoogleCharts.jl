@@ -1,3 +1,5 @@
+using DataArrays
+
 ## Convenience functions
 ## unlike the charts, these take an IO object to plot 
 
