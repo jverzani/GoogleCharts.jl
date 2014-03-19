@@ -2,6 +2,7 @@ module GoogleCharts
 
 using Mustache
 using JSON
+using DataArrays
 using DataFrames
 using Datetime
 

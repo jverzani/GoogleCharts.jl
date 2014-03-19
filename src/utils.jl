@@ -21,19 +21,19 @@ function two_json(x::DateTime)
 end
 
 column_tpl = mt"{{{:id}}}_data.addColumn(\"{{:type}}\", \"{{:name}}\");"
-add_column(id::String, nm::String, x)               = Mustache.render(column_tpl, {:id=>id, :type=>"string",   :name=>nm})
-add_column(id::String, nm::String, x::DateTime)         = Mustache.render(column_tpl, {:id=>id, :type=>"datetime", :name=>nm})
-add_column(id::String, nm::String, x::Number)       = Mustache.render(column_tpl, {:id=>id, :type=>"number",   :name=>nm})
-add_column(id::String, nm::String, x::Bool)         = Mustache.render(column_tpl, {:id=>id, :type=>"boolean",  :name=>nm})
+add_column(id::String, nm::Symbol, x)               = Mustache.render(column_tpl, {:id=>id, :type=>"string",   :name=>string(nm)})
+add_column(id::String, nm::Symbol, x::DateTime)         = Mustache.render(column_tpl, {:id=>id, :type=>"datetime", :name=>string(nm)})
+add_column(id::String, nm::Symbol, x::Number)       = Mustache.render(column_tpl, {:id=>id, :type=>"number",   :name=>string(nm)})
+add_column(id::String, nm::Symbol, x::Bool)         = Mustache.render(column_tpl, {:id=>id, :type=>"boolean",  :name=>string(nm)})
 
 ## Make a google data table from a data frame object
 function make_data_array(id::String, d::DataFrame)
     wrap(x) = "[$x]"
     make_row(x) = join([two_json(x[1,i]) for i in 1:ncol(d)], ", ") |> wrap
     out = ["new google.visualization.DataTable();"]
-    nms = colnames(d)
+    nms = names(d)
     for i in 1:size(d)[2]
-        push!(out, add_column(id, nms[i], vector(d[:,i])[1]))
+        push!(out, add_column(id, nms[i], d[:,i][1]))
     end
     push!(out, id*"_data.addRows([")
     push!(out, join([make_row(d[i,:]) for i in 1:nrow(d)], ", "))

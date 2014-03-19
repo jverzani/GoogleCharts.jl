@@ -10,9 +10,7 @@ function plot(io::Union(IO, String, Nothing), f::Function, a::Real, b::Real, arg
     y = float([f(x) for x in x])
     y[ y.== Inf] = NaN
         
-    d = DataFrame()
-    d = cbind(d, x, y)
-    colnames!(d, ["x", "y"])
+    d = DataFrame(x=x,y=y)
 
     chart = line_chart(d, merge(args, {:curveType => "function"}), nothing, nothing)
     io == nothing ? redisplay(chart)  : render(io, chart)
@@ -39,7 +37,7 @@ function  plot(io::Union(IO, String, Nothing), fs::Vector{Function}, a::Real, b:
         d = cbind(d, y)
     end
 
-    colnames!(d, ["x", ["f$i" for i in 1:length(fs)]])
+    names!(d, [:x, [symbol("f$i") for i in 1:length(fs)]])
         
     chart = line_chart(d, merge(args, {:curveType => "function"}), nothing, nothing)
 
@@ -75,8 +73,8 @@ function plot{S <: Real, T <: Real}(io::Union(IO, String, Nothing),
                                     x::Union(DataArray{S, 1}, Range1{S}, Vector{S}),
                                     y::Union(DataArray{T, 1}, Range1{T}, Vector{T}), args::Dict)
     if !(length(x)  == length(y)) error("Lengths don't match") end
-    d = cbind(DataFrame(), x, y)
-    colnames!(d, ["x", "y"])
+    d = DataFrame(x=x, y=y)
+
 
     chart = line_chart(d, args, nothing, nothing)
     io == nothing ? redisplay(chart) : render(io, chart)
@@ -102,7 +100,7 @@ end
 
 ## Plots with data frames
 SymOrExpr = Union(Symbol, Expr)
-plot(x::SymOrExpr, y::SymOrExpr, data::DataFrame, args::Dict) = plot(with(data, x), with(data, y), args)
+plot(x::SymOrExpr, y::SymOrExpr, data::DataFrame, args::Dict) = plot(data[string(x)], data[string(y)], args)
 function plot(x::SymOrExpr, y::SymOrExpr, data::DataFrame; kwargs...) 
     d = Dict()
     [d[s] = v for (s,v) in kwargs]
@@ -113,8 +111,7 @@ end
 function scatter(io::Union(IO, String, Nothing),
                  x::VectorLike, y::VectorLike, 
                  args::Dict)
-    d = cbind(DataFrame(), x, y)
-    colnames!(d, ["x", "y"])
+    d = DataFrame(x=x, y=y)
     chart = scatter_chart(d, args)
     io == nothing ? redisplay(chart) : render(io, chart)
     nothing
@@ -158,8 +155,8 @@ end
 function scatter(io::Union(IO, String, Nothing), gp::GroupedDataFrame, args::Dict)
     n = length(gp)
     d = cbind(DataFrame(),[[gp[i][:,1] for i in 1:n]...],[NaNWrap(i, gp) for i in 1:n]...)
-    colnames!(d, ["x", [gp[i][1,3] for i in 1:n]])       
-    chart = scatter_chart(d, merge({:hAxis=>{:title=>colnames(gp[1])[1]}, :vAxis=>{:title=>colnames(gp[1])[2]}}, args))
+    names!(d, [:x, [symbol(gp[i][1,3]) for i in 1:n]])       
+    chart = scatter_chart(d, merge({:hAxis=>{:title=>names(gp[1])[1]}, :vAxis=>{:title=>names(gp[1])[2]}}, args))
     io == nothing ? redisplay(chart) : render(io, chart)
     nothing
 end
