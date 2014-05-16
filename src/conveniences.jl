@@ -8,11 +8,11 @@ using DataArrays
 ## args like {:title=>"My title"}
 function plot(io::Union(IO, String, Nothing), f::Function, a::Real, b::Real, args::Dict)
     n = 250
-    x = linspace(a, float(b), n)
-    y = float([f(x) for x in x])
-    y[ y.== Inf] = NaN
+    xs = linspace(a, float(b), n)
+    ys = map(f, xs)
+    ys[ ys.== Inf] = NaN
         
-    d = DataFrame(x=x,y=y)
+    d = DataFrame(x=xs,y=ys)
 
     chart = line_chart(d, merge(args, {:curveType => "function"}), nothing, nothing)
     io == nothing ? redisplay(chart)  : render(io, chart)
@@ -29,14 +29,14 @@ end
 ## 1 or more functions at once
 function  plot(io::Union(IO, String, Nothing), fs::Vector{Function}, a::Real, b::Real, args::Dict)
     n = 250
-    x = linspace(a, float(b), n)
+    xs = linspace(a, float(b), n)
     d = DataFrame()
-    d = cbind(d, x)
+    d = cbind(d, xs)
     
     for f in fs
-        y = float([f(x) for x in x])
-        y[ y.== Inf] = NaN
-        d = cbind(d, y)
+        ys = float(map(f, xs))
+        ys[ ys.== Inf] = NaN
+        d = cbind(d, ys)
     end
 
     names!(d, [:x, [symbol("f$i") for i in 1:length(fs)]])
@@ -229,7 +229,7 @@ boxplot(x::Vector; kwargs...) = boxplot(nothing, x; kwargs...)
 function boxplot(io::Union(IO, String, Nothing), d::Dict, args::Dict)
     ## not efficient, but whatever
     nms = String[string(k) for k in keys(d)]
-    vals = [quantile(v, u) for (k,v) in d, u in 0:.25:1] |> float
+    vals = [quantile(v, u)::Real for (k,v) in d, u in 0:.25:1] 
 
     data = DataFrame(names=nms,
                      IQR = vals[:,1],
@@ -252,7 +252,7 @@ boxplot(d::Dict; kwargs...) = boxplot(nothing, d; kwargs...)
 ## XXX This is broken. How to easily get names from GroupedDataFrame
 function boxplot(io::Union(IO, String, Nothing), gp::GroupedDataFrame, args::Dict)
     n = length(gp)
-    nms = (gp | :sum)[:,1] ## hack!
+    nms = (gp |> :sum)[:,1] ## hack!
     vals = [quantile(v[:,1], u) for v in gp, u in 0:.25:1]
 
     data = DataFrame(names=nms,
@@ -281,7 +281,7 @@ function histogram(io::Union(IO, String, Nothing), x::Vector, args::Dict; n::Int
     end
     bins, counts = hist(x, n)
 
-    centers = (bins[1:end-1] + bins[2:end]) / 2
+    centers = (bins[1:end-1] .+ bins[2:end]) / 2
     data = DataFrame(x=centers, counts=counts)
 
     chart = column_chart(data, merge(args, {:legend=>nothing,
