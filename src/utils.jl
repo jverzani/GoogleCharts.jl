@@ -45,7 +45,7 @@ end
 ## Open a url using our heuristic
 function open_url(url::String) 
     @osx_only     run(`open $url`)
-    @windows_only run(`start $url`)
+    @windows_only run(`cmd /c start $url`)
     @linux_only   run(`xdg-open $url`)
 end
         
