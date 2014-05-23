@@ -30,10 +30,10 @@ A basic usage (see the test/ directory for more)
 ```
 using GoogleCharts, DataFrames
 
-scatter_data = DataFrame(quote
-    Age    = [8,  4,   11, 4, 3,   6.5]
+scatter_data = DataFrame(
+    Age    = [8,  4,   11, 4, 3,   6.5],
     Weight = [12, 5.5, 14, 5, 3.5, 7  ]
-end)
+)
 
 options = {:title => "Age vs. Weight comparison",
            :hAxis =>  {:title => "Age", 
@@ -46,7 +46,7 @@ options = {:title => "Age vs. Weight comparison",
 
 chart = scatter_chart(scatter_data, options);
 
-render(chart)   ## displays in browser. 
+render(chart)   ## displays in browser. Not used in IJulia.
 ```
 
 For non-nested options, keyword arguments can be given, as opposed to a dictionary:
