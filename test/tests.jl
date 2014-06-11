@@ -198,7 +198,7 @@ render(chart)
 ## extra hassle to get ymd into data frame
 annotated_data = DataFrame()
 annotated_data = cbind(annotated_data, [ymd(2008, 1, i) for i in 1:6])
-colnames!(annotated_data, ["Year"])
+names!(annotated_data, [:Year])
 tmp = DataFrame(
                 SoldPencils = [30000, 14045, 55022,75284, 41476, 33322],
                 Title1 = [nothing,nothing,nothing,nothing,"bought pens",nothing],
@@ -223,7 +223,7 @@ d = cbind(d, [1000, 1150, 300, 1200, 750, 788])
 d = cbind(d, [300, 200, 250, 400, 150, 617])
 e,w = "East", "West"
 d = cbind(d, [e, w, w, e, w, w])
-colnames!(d, ["Fruit", "Date", "Sales", "Expenses", "Location"])
+names!(d, map(symbol,["Fruit", "Date", "Sales", "Expenses", "Location"]))
 
 
 chart = motion_chart(d, nothing)
