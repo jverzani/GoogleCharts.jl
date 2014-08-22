@@ -362,7 +362,7 @@ function render(io, p::SurfacePlot)
     open_url(f)
 end
 
-function Base.repl_show(io::IO, p::SurfacePlot)
+function Base.display(io::IO, p::SurfacePlot)
     if io === STDOUT
         render(nothing, p)
     else
