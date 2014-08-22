@@ -4,7 +4,7 @@ using Mustache
 using JSON
 using DataArrays
 using DataFrames
-using Datetime
+using Dates
 
 import Base.show, Base.display
 
@@ -15,7 +15,7 @@ include("charts.jl")
 include("render.jl")
 include("conveniences.jl")
 
-tpl_name = Pkg.dir("GoogleCharts", "tpl", "chart.html")
+tpl_name = joinpath(dirname(@__FILE__),"../tpl/chart.html")
 global chart_tpl = Mustache.template_from_file(tpl_name)
 
 
