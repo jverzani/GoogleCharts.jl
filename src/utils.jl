@@ -20,10 +20,20 @@ function two_json(x::DateTime)
     "new Date($(year(x)), $(month(x)), $(day(x)), $(hour(x)), $(minute(x)), $(second(x)), 0)"
 end
 
+function two_json(x::Date)
+    ## Date(year, month, day, hours, minutes, seconds, milliseconds) ## need offsets!
+    "new Date($(year(x)), $(month(x)), $(day(x)))"
+end
+
 column_tpl = mt"{{{:id}}}_data.addColumn(\"{{:type}}\", \"{{:name}}\");"
 add_column(id::String, nm::Symbol, x)               = Mustache.render(column_tpl, {:id=>id, :type=>"string",   :name=>string(nm)})
+
 add_column(id::String, nm::Symbol, x::DateTime)         = Mustache.render(column_tpl, {:id=>id, :type=>"datetime", :name=>string(nm)})
+
+add_column(id::String, nm::Symbol, x::Date)         = Mustache.render(column_tpl, {:id=>id, :type=>"date", :name=>string(nm)})
+
 add_column(id::String, nm::Symbol, x::Number)       = Mustache.render(column_tpl, {:id=>id, :type=>"number",   :name=>string(nm)})
+
 add_column(id::String, nm::Symbol, x::Bool)         = Mustache.render(column_tpl, {:id=>id, :type=>"boolean",  :name=>string(nm)})
 
 ## Make a google data table from a data frame object

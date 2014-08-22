@@ -50,7 +50,7 @@ charts = (
             "https://developers.google.com/chart/interactive/docs/gallery/annotatedtimeline")
           ,(:intensity_map,  "IntensityMap",   ["intensitymap"], {:title => "Intensity map"},
             "https://developers.google.com/chart/interactive/docs/gallery/intensitymap")
-          ,(:motion_chart,   "MotionChart",    ["motionchart"], {:width=>600,:height=>600},
+          ,(:motion_chart,   "MotionChart",    ["motionchart"], {:width=>900,:height=>600},
             "https://developers.google.com/chart/interactive/docs/gallery/motionchart")
           ,(:org_chart,      "OrgChart",       ["orgchart"], {:title => "Org chart"},
             "https://developers.google.com/chart/interactive/docs/gallery/orgchart")

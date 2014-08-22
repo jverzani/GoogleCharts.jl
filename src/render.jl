@@ -138,10 +138,10 @@ if displayable("text/html")
 end
 
 ## in case surface plot is desired (not reliable)
-# inject_surfaceplot_javascript = Base.display("text/html", """
-#     <script type='text/javascript' src='http://javascript-surface-plot.googlecode.com/svn/trunk/javascript/SurfacePlot.js'></script>
-#     <script type='text/javascript' src='http://javascript-surface-plot.googlecode.com/svn/trunk/javascript/ColourGradient.js'></script>
-#         """)
+inject_surfaceplot_javascript() = Base.display("text/html", """
+<script type='text/javascript' src='http://javascript-surface-plot.googlecode.com/svn/trunk/javascript/SurfacePlot.js'></script>
+<script type='text/javascript' src='http://javascript-surface-plot.googlecode.com/svn/trunk/javascript/ColourGradient.js'></script>
+""")
 
 ## display to browser, or writemime
 #function Base.repl_show(io::IO, chart::GoogleChart)

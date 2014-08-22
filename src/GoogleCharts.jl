@@ -4,7 +4,7 @@ using Mustache
 using JSON
 using DataArrays
 using DataFrames
-using Dates
+using Base.Dates
 
 import Base.show, Base.display
 

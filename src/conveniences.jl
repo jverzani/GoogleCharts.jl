@@ -131,22 +131,25 @@ end
 scatter(x::VectorLike, y::VectorLike; kwargs...) = scatter(nothing, x, y; kwargs...)
 
 function scatter(io::Union(IO, String, Nothing), x::SymOrExpr, y::SymOrExpr, data::DataFrame, args::Dict) 
-    scatter(io, with(data, x), with(data, y), args)
+    scatter(io, data[x], data[y], args)
 end
 
-scatter(x::SymOrExpr, y::SymOrExpr, data::DataFrame, args::Dict) = scatter(nothing, with(data, x), with(data, y), args)
+scatter(x::SymOrExpr, y::SymOrExpr, data::DataFrame, args::Dict) = scatter(nothing, data[x], data[y], args)
 
 function scatter(io::Union(IO, String, Nothing),
                  x::SymOrExpr, y::SymOrExpr, data::DataFrame; kwargs...) 
     d = Dict()
     [d[s] = v for (s,v) in kwargs]
-    scatter(io, with(data, x), with(data, y), d)
+    !haskey(d, "hAxis") && (d["hAxis"] = {"title"=>string(x)})
+    !haskey(d, "vAxis") && (d["vAxis"] = {"title"=>string(y)})
+
+    scatter(io,data[x], data[y], d)
 end
 scatter(x::SymOrExpr, y::SymOrExpr, data::DataFrame; kwargs...) = scatter(nothing, x, y, data; kwargs...)
 
 
 function NaNWrap(idx::Integer, gp::GroupedDataFrame)
-    [[i == idx ? vector(gp[i][:,2]) : rep(NaN, nrow(gp[i])) for i in 1:length(gp)]...]
+    [[i == idx ? gp[i][:,2] : rep(NaN, size(gp[i])[1]) for i in 1:length(gp)]...]
 end
 ## Assume dataframes are in [x,y, group,...] format
 ## using RDatasets
@@ -156,8 +159,12 @@ end
 ## scatter(gp)
 function scatter(io::Union(IO, String, Nothing), gp::GroupedDataFrame, args::Dict)
     n = length(gp)
-    d = cbind(DataFrame(),[[gp[i][:,1] for i in 1:n]...],[NaNWrap(i, gp) for i in 1:n]...)
-    names!(d, [:x, [symbol(gp[i][1,3]) for i in 1:n]])       
+    d = DataFrame(x = [[gp[i][:,1] for i in 1:n]...])
+    for i in 1:n
+        nm = symbol("x$i")
+        d[nm] = GoogleCharts.NaNWrap(i, gp) 
+    end
+
     chart = scatter_chart(d, merge({:hAxis=>{:title=>names(gp[1])[1]}, :vAxis=>{:title=>names(gp[1])[2]}}, args))
     io == nothing ? redisplay(chart) : render(io, chart)
     nothing
@@ -389,7 +396,9 @@ function surfaceplot(io::Union(IO, String, Nothing), f::Function, x::Vector, y::
 
 )
     chart_id = get_id()
-    d = DataFrame(Float64[f(x,y) for x in x, y in y])
+    m = Float64[f(x,y) for x in x, y in y]
+    d = convert(DataFrame, m)
+
     tool_tip(x,y) = "(" * (map(u -> round(u, 2), [x,y,f(x,0)]) |> u -> join(u, ", ")) * ")"
     tooltips = [tool_tip(x,y) for x in x, y in y] |> u -> reshape(u, length(x)*length(y)) |> JSON.json
     chart = SurfacePlot({:datatable => make_data_array(chart_id, d), 

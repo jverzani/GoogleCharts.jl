@@ -197,7 +197,7 @@ render(chart)
 ## annotated_time_line,
 ## extra hassle to get ymd into data frame
 annotated_data = DataFrame()
-annotated_data = cbind(annotated_data, [ymd(2008, 1, i) for i in 1:6])
+annotated_data = cbind(annotated_data, [Date(2008, 1, i) for i in 1:6])
 names!(annotated_data, [:Year])
 tmp = DataFrame(
                 SoldPencils = [30000, 14045, 55022,75284, 41476, 33322],
@@ -215,9 +215,10 @@ render(chart)
 ## intensity_map,
 
 ## Motion chart: Doesn't render locally without some adjustments...
+## http://helpx.adobe.com/flash-player/kb/communicate-internet-flash-content.html
 d = DataFrame()
 d = cbind(d, ["Apples", "Oranges", "Bananas", "Apples", "Oranges", "Bananas"])
-j1, j2 = ymd(1988, 1, 1), ymd(1989, 1, 1)
+j1, j2 = Date(1988, 1, 1), Date(1989, 1, 1)
 d = cbind(d, [j1, j1, j1, j2, j2, j2])
 d = cbind(d, [1000, 1150, 300, 1200, 750, 788])
 d = cbind(d, [300, 200, 250, 400, 150, 617])
@@ -244,7 +245,7 @@ render(chart)
 
 
 
-## image_spark_line
+## image_spark_line ## Deprecated by google
 spark_data = DataFrame(
     Revenue = [435, 438, 512, 460, 491, 387, 552,511, 505, 509],
     Licenses = [132, 131, 137, 142, 140, 139, 147, 146, 151, 149],
@@ -286,3 +287,25 @@ boxplot(gp)
 histogram(x)
 histogram(x, n=50)
 
+
+## From the README
+
+## parametric plots
+plot((x -> sin(2x), cos), 0, 2pi)
+
+## scatter plots
+x = linspace(0, 1., 20)
+y = rand(20)
+scatter(x, y)
+
+using RDatasets
+mtcars = dataset("datasets", "mtcars")
+scatter(:WT, :MPG, mtcars)
+
+iris = dataset("datasets", "iris")
+d=iris[:, [2,3,5]]          ## in the order  "x, y, grouping factor"
+gp = groupby(d, :Species)
+scatter(gp)  
+
+## surface plots (YMMV)
+#surfaceplot((x,y) -> x^2 + y^2, linspace(0,1,20), linspace(0,2,20))

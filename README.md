@@ -90,8 +90,8 @@ examples of configurations can be found there.
 The `render` method can draw a chart to an IOStream, a specified
 filename, or (when used as above) to a web page that is displayed
 locally. One can specify more than one chart at a time using a vector
-of charts. We have defined the `repl_show` method to render the chart in
-the browser and `writemime` to render within an `IJulia` notebook.
+of charts. We have defined a method to render the chart in
+the browser at the REPL and a `writemime` method to render within an `IJulia` notebook.
 
 ### A plot function
 
@@ -146,14 +146,14 @@ If the data is in a data frame format we have a interface like:
 
 ```
 using RDatasets
-mtcars = data("datasets", "mtcars")
-scatter(:wt, :mpg, mtcars)
+mtcars = dataset("datasets", "mtcars")
+scatter(:WT, :MPG, mtcars)
 ```
 
 And we can even use with `groupby` objects:
 
 ```
-iris = data("datasets", "iris")
+iris = dataset("datasets", "iris")
 d=iris[:, [2,3,6]]          ## in the order  "x, y, grouping factor"
 gp = groupby(d, :Species)
 scatter(gp)                 ## in R this would be plot(Sepal.Width ~ Sepal.Length, iris, col=Species)
@@ -169,7 +169,7 @@ Some experimental code is in place for surface plots. It needs work. The basic u
 surfaceplot((x,y) -> x^2 + y^2, linspace(0,1,20), linspace(0,2,20))
 ```
 
-The above does not seem to work in many browsers and does not work reliably in `IJulia` (only success has been with Chrome and that is being deprecated).
+The above does not seem to work in many browsers and does not work reliably in `IJulia` (only success has been with Chrome).
 
 
 ### TODO
