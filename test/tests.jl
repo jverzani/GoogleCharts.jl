@@ -1,4 +1,4 @@
-using Calendar, DataFrames, GoogleCharts
+using DataFrames, GoogleCharts, Base.Dates
 
 year_sales_expenses = DataFrame(
     Year     = map(string, 2004:2007),
