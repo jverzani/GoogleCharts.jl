@@ -15,8 +15,11 @@ function plot(io::Union(IO, String, Nothing), f::Function, a::Real, b::Real, arg
     d = DataFrame(x=xs,y=ys)
 
     chart = line_chart(d, merge(args, {:curveType => "function"}), nothing, nothing)
-    io == nothing ? redisplay(chart)  : render(io, chart)
-    nothing
+    ## Trade off (likely from ignorance)
+    ## returning `chart` works with Interact
+    ## returning the following allows multiple plot call per cell
+    #    io == nothing ? redisplay(chart)  : render(io, chart)
+    chart
 end
 
 plot(f::Function, a::Real, b::Real, args::Dict) = plot(nothing, f, a, b, args)
@@ -41,10 +44,7 @@ function  plot(io::Union(IO, String, Nothing), fs::Vector{Function}, a::Real, b:
 
     names!(d, [:x, [symbol("f$i") for i in 1:length(fs)]])
         
-    chart = line_chart(d, merge(args, {:curveType => "function"}), nothing, nothing)
-
-    io == nothing ? redisplay(chart) : render(io, chart)
-    nothing
+    line_chart(d, merge(args, {:curveType => "function"}), nothing, nothing)
 end
 
 plot(fs::Vector{Function}, a::Real, b::Real, args::Dict) = plot(nothing, fs, a, b, args)
@@ -78,9 +78,7 @@ function plot{S <: Real, T <: Real}(io::Union(IO, String, Nothing),
     d = DataFrame(x=x, y=y)
 
 
-    chart = line_chart(d, args, nothing, nothing)
-    io == nothing ? redisplay(chart) : render(io, chart)
-    nothing
+    line_chart(d, args, nothing, nothing)
 end
 
 function plot{S <: Real, T <: Real}(io::Union(IO, String, Nothing),
@@ -114,9 +112,7 @@ function scatter(io::Union(IO, String, Nothing),
                  x::VectorLike, y::VectorLike, 
                  args::Dict)
     d = DataFrame(x=x, y=y)
-    chart = scatter_chart(d, args)
-    io == nothing ? redisplay(chart) : render(io, chart)
-    nothing
+    scatter_chart(d, args)
 end
 scatter(x::VectorLike, y::VectorLike, args::Dict) = scatter(nothing, x, y, args)
 
@@ -124,9 +120,7 @@ function scatter(io::Union(IO, String, Nothing),
                  x::VectorLike, y::VectorLike; kwargs...)
     d = Dict()
     [d[s] = v for (s,v) in kwargs]
-    chart = scatter(x, y, d)
-    io == nothing ? redisplay(chart) : render(io, chart)
-    nothing
+    scatter(x, y, d)
 end
 scatter(x::VectorLike, y::VectorLike; kwargs...) = scatter(nothing, x, y; kwargs...)
 
@@ -165,9 +159,7 @@ function scatter(io::Union(IO, String, Nothing), gp::GroupedDataFrame, args::Dic
         d[nm] = GoogleCharts.NaNWrap(i, gp) 
     end
 
-    chart = scatter_chart(d, merge({:hAxis=>{:title=>names(gp[1])[1]}, :vAxis=>{:title=>names(gp[1])[2]}}, args))
-    io == nothing ? redisplay(chart) : render(io, chart)
-    nothing
+    scatter_chart(d, merge({:hAxis=>{:title=>names(gp[1])[1]}, :vAxis=>{:title=>names(gp[1])[2]}}, args))
 end
 scatter(gp::GroupedDataFrame, args::Dict) = scatter(nothing, gp, args)
 function scatter(io::Union(IO, String, Nothing), gp::GroupedDataFrame; kwargs...) 
@@ -218,9 +210,7 @@ function boxplot(io::Union(IO, String, Nothing), x::Vector, args::Dict)
                      max= stats[5]
                      )
 
-    chart = candlestick_chart(data, merge(args, {:legend=>nothing}))
-    io == nothing ? redisplay(chart) : render(io, chart)
-    nothing
+    candlestick_chart(data, merge(args, {:legend=>nothing}))
 end
 boxplot(x::Vector, args::Dict) = boxplot(nothing, x, args)
 
@@ -244,9 +234,7 @@ function boxplot(io::Union(IO, String, Nothing), d::Dict, args::Dict)
                      q1 = vals[:,2],
                      max = vals[:,5])
 
-    chart = candlestick_chart(data, merge(args, {:legend=>nothing}))
-    io == nothing ? redisplay(chart) : render(io, chart)
-    nothing
+    candlestick_chart(data, merge(args, {:legend=>nothing}))
 end
 boxplot(d::Dict, args::Dict) = boxplot(nothing, d, args)
 function boxplot(io::Union(IO, String, Nothing), D::Dict; kwargs...)
@@ -268,9 +256,7 @@ function boxplot(io::Union(IO, String, Nothing), gp::GroupedDataFrame, args::Dic
                      q1 = vals[:,2],
                      max = vals[:,5])
     
-    chart = candlestick_chart(data, merge(args, {:title=>"boxplot", :legend=>nothing}))
-    io == nothing ? redisplay(chart) : render(io, chart)
-    nothing
+    candlestick_chart(data, merge(args, {:title=>"boxplot", :legend=>nothing}))
 end
 boxplot(gp::GroupedDataFrame, args::Dict) = boxplot(gp, args)
 function boxplot(io::Union(IO, String, Nothing), gp::GroupedDataFrame; kwargs...)
@@ -291,11 +277,9 @@ function histogram(io::Union(IO, String, Nothing), x::Vector, args::Dict; n::Int
     centers = (bins[1:end-1] .+ bins[2:end]) / 2
     data = DataFrame(x=centers, counts=counts)
 
-    chart = column_chart(data, merge(args, {:legend=>nothing,
+    column_chart(data, merge(args, {:legend=>nothing,
                                             :hAxis=>{:maxValue=>maximum(bins), :minValue=>minimum(bins)}, :bar=>{:groupWidth=>"99%"}}))
 
-    io == nothing ? redisplay(chart) : render(io, chart)
-    nothing
 end
 histogram(x::Vector, args::Dict; n::Integer=0) = histogram(nothing, io, args, n=n)
 
@@ -407,7 +391,6 @@ function surfaceplot(io::Union(IO, String, Nothing), f::Function, x::Vector, y::
                          :xPos=>xPos, :yPos=>yPos,
                          :width=>width, :height=>height
                          })
-    io == nothing ? redisplay(chart) : render(io, chart)
-    nothing
+    chart
 end
 surfaceplot(f::Function, x::Vector, y::Vector; kwargs...)   = surfaceplot(nothing, f, x, y; kwargs...)
