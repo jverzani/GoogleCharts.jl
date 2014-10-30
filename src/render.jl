@@ -1,22 +1,22 @@
 function charttype_to_dict(chart::GoogleChart)
-    {
+    [
      :chart_type => chart.chart_type,
      :chart_id => chart.id,
      :width=>chart.width,
      :height=>chart.height,
      :chart_data => chart.data,
      :chart_options => JSON.json(chart.options)
-     }
+     ]
 end
 
 ## take vector of google charts
 function charts_to_dict(charts)
     packages = union([chart.packages for chart in charts]...)
 
-   {:chart_packages => JSON.json(packages),
+   [:chart_packages => JSON.json(packages),
     :charts => [charttype_to_dict(chart) for chart in charts],
     :chart_xtra => join([chart.xtra for chart in charts],"\n")
-   }
+   ]
 end
 
 ## Render charts
@@ -79,13 +79,13 @@ var {{:id}}_chart = new google.visualization.{{:chart_type}}(document.getElement
 
 ## this is used by weave...
 function gadfly_format(x::CoreChart)
-    d = {:id => x.id,
+    d = [:id => x.id,
          :width => 600,
          :height => 400,
          :chart_data => x.data,
          :chart_options => json(x.options),
          :chart_type => x.chart_type
-         }
+         ]
     Mustache.render(gadfly_weave_tpl, d)
 end
 
@@ -116,13 +116,13 @@ setTimeout(function(){
 """
 
 function writemime(io::IO, ::MIME"text/html", x::GoogleChart) 
-    d = {:id => x.id,
+    d = [:id => x.id,
          :width => 600,
          :height => 400,
          :chart_data => x.data,
          :chart_options => json(x.options),
          :chart_type => x.chart_type
-         }
+         ]
     out = Mustache.render(writemime_tpl, d)
     print(io, out)
 end

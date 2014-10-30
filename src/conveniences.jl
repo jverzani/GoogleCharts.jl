@@ -5,7 +5,7 @@ using DataArrays
 
 ## Plot a function
 ## GoogleCharts does not like Inf values, but handles NaN gracefully. We replace
-## args like {:title=>"My title"}
+## args like [:title=>"My title"]
 function plot(io::Union(IO, String, Nothing), f::Function, a::Real, b::Real, args::Dict)
     n = 250
     xs = linspace(a, float(b), n)
@@ -14,7 +14,7 @@ function plot(io::Union(IO, String, Nothing), f::Function, a::Real, b::Real, arg
         
     d = DataFrame(x=xs,y=ys)
 
-    chart = line_chart(d, merge(args, {:curveType => "function"}), nothing, nothing)
+    chart = line_chart(d, merge(args, [:curveType => "function"]), nothing, nothing)
     ## Trade off (likely from ignorance)
     ## returning `chart` works with Interact
     ## returning the following allows multiple plot call per cell
@@ -44,7 +44,7 @@ function  plot(io::Union(IO, String, Nothing), fs::Vector{Function}, a::Real, b:
 
     names!(d, [:x, [symbol("f$i") for i in 1:length(fs)]])
         
-    line_chart(d, merge(args, {:curveType => "function"}), nothing, nothing)
+    line_chart(d, merge(args, [:curveType => "function"]), nothing, nothing)
 end
 
 plot(fs::Vector{Function}, a::Real, b::Real, args::Dict) = plot(nothing, fs, a, b, args)
@@ -134,8 +134,8 @@ function scatter(io::Union(IO, String, Nothing),
                  x::SymOrExpr, y::SymOrExpr, data::DataFrame; kwargs...) 
     d = Dict()
     [d[s] = v for (s,v) in kwargs]
-    !haskey(d, "hAxis") && (d["hAxis"] = {"title"=>string(x)})
-    !haskey(d, "vAxis") && (d["vAxis"] = {"title"=>string(y)})
+    !haskey(d, :hAxis) && (d[:hAxis] = [:title=>string(x)])
+    !haskey(d, :vAxis) && (d[:vAxis] = [:title=>string(y)])
 
     scatter(io,data[x], data[y], d)
 end
@@ -159,7 +159,7 @@ function scatter(io::Union(IO, String, Nothing), gp::GroupedDataFrame, args::Dic
         d[nm] = GoogleCharts.NaNWrap(i, gp) 
     end
 
-    scatter_chart(d, merge({:hAxis=>{:title=>names(gp[1])[1]}, :vAxis=>{:title=>names(gp[1])[2]}}, args))
+    scatter_chart(d, merge([:hAxis=>[:title=>names(gp[1])[1]], :vAxis=>[:title=>names(gp[1])[2]]], args))
 end
 scatter(gp::GroupedDataFrame, args::Dict) = scatter(nothing, gp, args)
 function scatter(io::Union(IO, String, Nothing), gp::GroupedDataFrame; kwargs...) 
@@ -210,7 +210,7 @@ function boxplot(io::Union(IO, String, Nothing), x::Vector, args::Dict)
                      max= stats[5]
                      )
 
-    candlestick_chart(data, merge(args, {:legend=>nothing}))
+    candlestick_chart(data, merge(args, [:legend=>nothing]))
 end
 boxplot(x::Vector, args::Dict) = boxplot(nothing, x, args)
 
@@ -234,7 +234,7 @@ function boxplot(io::Union(IO, String, Nothing), d::Dict, args::Dict)
                      q1 = vals[:,2],
                      max = vals[:,5])
 
-    candlestick_chart(data, merge(args, {:legend=>nothing}))
+    candlestick_chart(data, merge(args, [:legend=>nothing]))
 end
 boxplot(d::Dict, args::Dict) = boxplot(nothing, d, args)
 function boxplot(io::Union(IO, String, Nothing), D::Dict; kwargs...)
@@ -256,7 +256,7 @@ function boxplot(io::Union(IO, String, Nothing), gp::GroupedDataFrame, args::Dic
                      q1 = vals[:,2],
                      max = vals[:,5])
     
-    candlestick_chart(data, merge(args, {:title=>"boxplot", :legend=>nothing}))
+    candlestick_chart(data, merge(args, [:title=>"boxplot", :legend=>nothing]))
 end
 boxplot(gp::GroupedDataFrame, args::Dict) = boxplot(gp, args)
 function boxplot(io::Union(IO, String, Nothing), gp::GroupedDataFrame; kwargs...)
@@ -277,8 +277,8 @@ function histogram(io::Union(IO, String, Nothing), x::Vector, args::Dict; n::Int
     centers = (bins[1:end-1] .+ bins[2:end]) / 2
     data = DataFrame(x=centers, counts=counts)
 
-    column_chart(data, merge(args, {:legend=>nothing,
-                                            :hAxis=>{:maxValue=>maximum(bins), :minValue=>minimum(bins)}, :bar=>{:groupWidth=>"99%"}}))
+    column_chart(data, merge(args, [:legend=>nothing,
+                                            :hAxis=>[:maxValue=>maximum(bins), :minValue=>minimum(bins)], :bar=>[:groupWidth=>"99%"]]))
 
 end
 histogram(x::Vector, args::Dict; n::Integer=0) = histogram(nothing, io, args, n=n)
@@ -348,7 +348,7 @@ function render(io, p::SurfacePlot)
     tpl = Mustache.template_from_file(Pkg.dir("GoogleCharts", "tpl", "surface.html"))
     f = tempname() * ".html"
     io = open(f, "w")
-    Mustache.render(io, tpl, {:surfaceplot=>plt, :chart_id=>p.x[:chart_id]})
+    Mustache.render(io, tpl, [:surfaceplot=>plt, :chart_id=>p.x[:chart_id]])
     close(io)
     open_url(f)
 end
@@ -385,12 +385,12 @@ function surfaceplot(io::Union(IO, String, Nothing), f::Function, x::Vector, y::
 
     tool_tip(x,y) = "(" * (map(u -> round(u, 2), [x,y,f(x,0)]) |> u -> join(u, ", ")) * ")"
     tooltips = [tool_tip(x,y) for x in x, y in y] |> u -> reshape(u, length(x)*length(y)) |> JSON.json
-    chart = SurfacePlot({:datatable => make_data_array(chart_id, d), 
+    chart = SurfacePlot([:datatable => make_data_array(chart_id, d), 
                          :tooltips=>tooltips, 
                          :chart_id=>chart_id,
                          :xPos=>xPos, :yPos=>yPos,
                          :width=>width, :height=>height
-                         })
+                         ])
     chart
 end
 surfaceplot(f::Function, x::Vector, y::Vector; kwargs...)   = surfaceplot(nothing, f, x, y; kwargs...)
