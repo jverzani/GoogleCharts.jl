@@ -198,8 +198,8 @@ render(chart)
 ## annotated_time_line,
 ## extra hassle to get ymd into data frame
 annotated_data = DataFrame()
-annotated_data = cbind(annotated_data, [Date(2008, 1, i) for i in 1:6])
-names!(annotated_data, [:Year])
+annotated_data[:Year] = [Date(2008, 1, i) for i in 1:6]
+
 tmp = DataFrame(
                 SoldPencils = [30000, 14045, 55022,75284, 41476, 33322],
                 Title1 = [nothing,nothing,nothing,nothing,"bought pens",nothing],
@@ -208,7 +208,7 @@ tmp = DataFrame(
                 title2 = [nothing,nothing,nothing,"Out of Stock",nothing, nothing],
                 text2 = [nothing,nothing,nothing,"Ran out of stock on pens at 4pm",nothing, nothing]
                 )
-annotated_data = cbind(annotated_data, tmp)
+annotated_data = vcat(annotated_data, tmp)
 options = [:displayAnnotations=>true]
 chart = annotated_time_line(annotated_data, options)
 render(chart)
@@ -218,14 +218,14 @@ render(chart)
 ## Motion chart: Doesn't render locally without some adjustments...
 ## http://helpx.adobe.com/flash-player/kb/communicate-internet-flash-content.html
 d = DataFrame()
-d = cbind(d, ["Apples", "Oranges", "Bananas", "Apples", "Oranges", "Bananas"])
+d[:Fruit] = ["Apples", "Oranges", "Bananas", "Apples", "Oranges", "Bananas"]
 j1, j2 = Date(1988, 1, 1), Date(1989, 1, 1)
-d = cbind(d, [j1, j1, j1, j2, j2, j2])
-d = cbind(d, [1000, 1150, 300, 1200, 750, 788])
-d = cbind(d, [300, 200, 250, 400, 150, 617])
+d[:Date] = [j1, j1, j1, j2, j2, j2]
+d[:Sales] = [1000, 1150, 300, 1200, 750, 788]
+d[:Expenses] = [300, 200, 250, 400, 150, 617]
 e,w = "East", "West"
-d = cbind(d, [e, w, w, e, w, w])
-names!(d, map(symbol,["Fruit", "Date", "Sales", "Expenses", "Location"]))
+d[:Location] = [e, w, w, e, w, w]
+
 
 
 chart = motion_chart(d, nothing)

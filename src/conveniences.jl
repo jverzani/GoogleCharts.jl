@@ -34,16 +34,14 @@ function  plot(io::Union(IO, String, Nothing), fs::Vector{Function}, a::Real, b:
     n = 250
     xs = linspace(a, float(b), n)
     d = DataFrame()
-    d = cbind(d, xs)
-    
-    for f in fs
-        ys = float(map(f, xs))
+    d[:x] =  xs
+
+    for i in 1:length(fs)
+        ys = float(map(fs[i], xs))
         ys[ ys.== Inf] = NaN
-        d = cbind(d, ys)
+        d[symbol("f$i")] = ys
     end
 
-    names!(d, [:x, [symbol("f$i") for i in 1:length(fs)]])
-        
     line_chart(d, merge(args, [:curveType => "function"]), nothing, nothing)
 end
 
@@ -247,7 +245,7 @@ boxplot(d::Dict; kwargs...) = boxplot(nothing, d; kwargs...)
 ## XXX This is broken. How to easily get names from GroupedDataFrame
 function boxplot(io::Union(IO, String, Nothing), gp::GroupedDataFrame, args::Dict)
     n = length(gp)
-    nms = (gp |> :sum)[:,1] ## hack!
+    nms = (gp |> sum)[:,1] ## hack!
     vals = [quantile(v[:,1], u) for v in gp, u in 0:.25:1]
 
     data = DataFrame(names=nms,
