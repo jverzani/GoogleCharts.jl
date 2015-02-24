@@ -17,7 +17,7 @@ include("charts.jl")
 include("render.jl")
 include("conveniences.jl")
 
-tpl_name = joinpath(dirname(@__FILE__),"../tpl/chart.html")
+tpl_name = joinpath(dirname(@__FILE__),"..", "tpl", "chart.html")
 global chart_tpl = Mustache.template_from_file(tpl_name)
 
 

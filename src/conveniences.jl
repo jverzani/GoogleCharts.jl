@@ -343,7 +343,7 @@ end
 function render(io, p::SurfacePlot)
     plt = Mustache.render(surface_tpl, p.x)
 
-    tpl = Mustache.template_from_file(Pkg.dir("GoogleCharts", "tpl", "surface.html"))
+    tpl = Mustache.template_from_file(joinpath(dirname(@__FILE__), "..", "tpl", "surface.html"))
     f = tempname() * ".html"
     io = open(f, "w")
     Mustache.render(io, tpl, [:surfaceplot=>plt, :chart_id=>p.x[:chart_id]])
