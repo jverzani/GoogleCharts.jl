@@ -70,8 +70,8 @@ plot( fs::Tuple, a::Real, b::Real; kwargs...)=plot(nothing, fs, a, b;  kwargs...
 
 ## plot x,y
 function plot{S <: Real, T <: Real}(io::Union(IO, String, Nothing),
-                                    x::Union(DataArray{S, 1}, Range1{S}, Vector{S}),
-                                    y::Union(DataArray{T, 1}, Range1{T}, Vector{T}), args::Dict)
+                                    x::Union(DataArray{S, 1}, UnitRange{S}, Vector{S}),
+                                    y::Union(DataArray{T, 1}, UnitRange{T}, Vector{T}), args::Dict)
     if !(length(x)  == length(y)) error("Lengths don't match") end
     d = DataFrame(x=x, y=y)
 
@@ -80,15 +80,15 @@ function plot{S <: Real, T <: Real}(io::Union(IO, String, Nothing),
 end
 
 function plot{S <: Real, T <: Real}(io::Union(IO, String, Nothing),
-                                    x::Union(DataArray{S, 1}, Range1{S}, Vector{S}),
-                                    y::Union(DataArray{T, 1}, Range1{T}, Vector{T});
+                                    x::Union(DataArray{S, 1}, UnitRange{S}, Vector{S}),
+                                    y::Union(DataArray{T, 1}, UnitRange{T}, Vector{T});
                                     kwargs...)
     d = Dict()
     [d[s] = v for (s,v) in kwargs]
     plot(io, x, y, d)
 end
 
-VectorLike = Union(DataArray, Range1, Vector)
+VectorLike = Union(DataArray, UnitRange, Vector)
 plot(x::VectorLike, y::VectorLike, args::Dict) = plot(nothing, x, y, args)
 function plot(x::VectorLike, y::VectorLike; kwargs...) 
     d = Dict()

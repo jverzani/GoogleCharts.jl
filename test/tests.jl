@@ -299,14 +299,14 @@ x = linspace(0, 1., 20)
 y = rand(20)
 scatter(x, y)
 
-using RDatasets
-mtcars = dataset("datasets", "mtcars")
-scatter(:WT, :MPG, mtcars)
+# using RDatasets ## added dependency
+# mtcars = dataset("datasets", "mtcars")
+# scatter(:WT, :MPG, mtcars)
 
-iris = dataset("datasets", "iris")
-d=iris[:, [2,3,5]]          ## in the order  "x, y, grouping factor"
-gp = groupby(d, :Species)
-scatter(gp)  
+# iris = dataset("datasets", "iris")
+# d=iris[:, [2,3,5]]          ## in the order  "x, y, grouping factor"
+# gp = groupby(d, :Species)
+# scatter(gp)  
 
 ## surface plots (YMMV)
 #surfaceplot((x,y) -> x^2 + y^2, linspace(0,1,20), linspace(0,2,20))
