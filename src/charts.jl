@@ -3,13 +3,13 @@ abstract GoogleChart
 ## Concrete type for Core charts
 type CoreChart <: GoogleChart
     packages::Vector
-    chart_type::String
-    id::String
+    chart_type::AbstractString
+    id::AbstractString
     width::Integer
     height::Integer
     options::Dict
     data::Any
-    xtra::String   ## xtra javascript as a string
+    xtra::AbstractString   ## xtra javascript as a string
 end
 
 ## Charts from
@@ -17,42 +17,42 @@ end
 ## and
 ## https://developers.google.com/chart/interactive/docs/more_charts
 charts = (
-          (:area_chart,     "AreaChart",       ["corechart"], [:title => "Area chart"],
+          (:area_chart,     "AreaChart",       ["corechart"], Dict(:title => "Area chart"),
            "https://developers.google.com/chart/interactive/docs/gallery/areachart")
-          ,(:bar_chart,     "BarChart",        ["corechart"], [:title => "Bar chart"],
+          ,(:bar_chart,     "BarChart",        ["corechart"], Dict(:title => "Bar chart"),
             "https://developers.google.com/chart/interactive/docs/gallery/areachart")
-          ,(:bubble_chart,  "BubbleChart",     ["corechart"], [:title => "Bubble chart", :bubble=>[:textStyle=>[:fontSize=>11]]],
+          ,(:bubble_chart,  "BubbleChart",     ["corechart"], Dict(:title => "Bubble chart", :bubble=>Dict(:textStyle=>Dict(:fontSize=>11))),
             "https://developers.google.com/chart/interactive/docs/gallery/bubblechart")
-          ,(:candlestick_chart,    "CandlestickChart",   ["corechart"], [:title => "Candlestick chart"],
+          ,(:candlestick_chart,    "CandlestickChart",   ["corechart"], Dict(:title => "Candlestick chart"),
             "https://developers.google.com/chart/interactive/docs/gallery/candlestickchart")
-          ,(:column_chart,   "ColumnChart",    ["corechart"], [:title => "Column chart"],
+          ,(:column_chart,   "ColumnChart",    ["corechart"], Dict(:title => "Column chart"),
             "https://developers.google.com/chart/interactive/docs/gallery/columnchart")
-          ,(:combo_chart,    "ComboChart",     ["corechart"], [:title => "Combo chart"],
+          ,(:combo_chart,    "ComboChart",     ["corechart"], Dict(:title => "Combo chart"),
             "https://developers.google.com/chart/interactive/docs/gallery/combochart")
           ,(:gauge_chart,    "Gauge",     ["gauge"], Dict(),
             "https://developers.google.com/chart/interactive/docs/gallery/gaugechart")
-          ,(:geo_chart,      "GeoChart",       ["geochart"], [:title => "Geo chart"],
+          ,(:geo_chart,      "GeoChart",       ["geochart"], Dict(:title => "Geo chart"),
             "https://developers.google.com/chart/interactive/docs/gallery/geochart")
-          ,(:line_chart,     "LineChart",      ["corechart"], [:title => "Line chart"],
+          ,(:line_chart,     "LineChart",      ["corechart"], Dict(:title => "Line chart"),
             "https://developers.google.com/chart/interactive/docs/gallery/linechart")
-          ,(:pie_chart,      "PieChart",       ["corechart"], [:title => "Pie chart"],
+          ,(:pie_chart,      "PieChart",       ["corechart"], Dict(:title => "Pie chart"),
             "https://developers.google.com/chart/interactive/docs/gallery/piechart")
-          ,(:scatter_chart,  "ScatterChart",   ["corechart"], [:title => "Scatter chart"],
+          ,(:scatter_chart,  "ScatterChart",   ["corechart"], Dict(:title => "Scatter chart"),
             "https://developers.google.com/chart/interactive/docs/gallery/scatterchart")
-          ,(:stepped_area_chart,    "SteppedAreaChart",   ["corechart"], [:title => "Stepped area chart"],
+          ,(:stepped_area_chart,    "SteppedAreaChart",   ["corechart"], Dict(:title => "Stepped area chart"),
             "https://developers.google.com/chart/interactive/docs/gallery/steppedareachart")
-          ,(:table_chart,    "Table",     ["table"], [:title => "Table chart"],
+          ,(:table_chart,    "Table",     ["table"], Dict(:title => "Table chart"),
             "https://developers.google.com/chart/interactive/docs/gallery/tablechart")
-          ,(:tree_chart,     "TreeMap",      ["treemap"], [:title => "Tree chart"],
+          ,(:tree_chart,     "TreeMap",      ["treemap"], Dict(:title => "Tree chart"),
             "https://developers.google.com/chart/interactive/docs/gallery/treechart")
           ## See note about viewing from a file here: https://developers.google.com/chart/interactive/docs/gallery/motionchart#Overview
-          ,(:annotated_time_line,    "AnnotatedTimeLine",   ["annotatedtimeline"], [:title => "Annotated time line"],
+          ,(:annotated_time_line,    "AnnotatedTimeLine",   ["annotatedtimeline"], Dict(:title => "Annotated time line"),
             "https://developers.google.com/chart/interactive/docs/gallery/annotatedtimeline")
-          ,(:intensity_map,  "IntensityMap",   ["intensitymap"], [:title => "Intensity map"],
+          ,(:intensity_map,  "IntensityMap",   ["intensitymap"], Dict(:title => "Intensity map"),
             "https://developers.google.com/chart/interactive/docs/gallery/intensitymap")
-          ,(:motion_chart,   "MotionChart",    ["motionchart"], [:width=>900,:height=>600],
+          ,(:motion_chart,   "MotionChart",    ["motionchart"], Dict(:width=>900,:height=>600),
             "https://developers.google.com/chart/interactive/docs/gallery/motionchart")
-          ,(:org_chart,      "OrgChart",       ["orgchart"], [:title => "Org chart"],
+          ,(:org_chart,      "OrgChart",       ["orgchart"], Dict(:title => "Org chart"),
             "https://developers.google.com/chart/interactive/docs/gallery/orgchart")
           ,(:image_spark_line,    "ImageSparkLine",   ["imagesparkline"], Dict(),
             "https://developers.google.com/chart/interactive/docs/gallery/imagesparkline")
@@ -91,7 +91,7 @@ for (nm, ctype, packages, defaults, url) in charts
 end
 
 ## get help for chart named...
-function help_on_chart(nm::String)
+function help_on_chart(nm::AbstractString)
     default_url = "https://developers.google.com/chart/interactive/docs/gallery"
     for (name, ctype, packages, defaults, url) in charts
         if nm == string(name)

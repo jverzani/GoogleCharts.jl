@@ -5,12 +5,12 @@ catch
 end
 
 
-MaybeDict = Union(Nothing, Dict)
-MaybeInt  = Union(Nothing, Integer)
-MaybeString = Union(Nothing, String)
+MaybeDict = Union{Void, Dict} # use Nullable! XXX
+MaybeInt  = Union{Void, Integer}
+MaybeString = Union{Void, AbstractString}
 
 ## get a random chart id
-get_id() = "google_chart_" * join(int(10*rand(10)), "")
+get_id() = "google_chart_" * join(round(Int, 10*rand(10)), "")
 
 
 ## This wrapper for json allows us to override certain types
@@ -26,18 +26,18 @@ function two_json(x::Date)
 end
 
 column_tpl = mt"{{{:id}}}_data.addColumn(\"{{:type}}\", \"{{:name}}\");"
-add_column(id::String, nm::Symbol, x)               = Mustache.render(column_tpl, {:id=>id, :type=>"string",   :name=>string(nm)})
+add_column(id::AbstractString, nm::Symbol, x)               = Mustache.render(column_tpl, Dict(:id=>id, :type=>"string",   :name=>string(nm)))
 
-add_column(id::String, nm::Symbol, x::DateTime)         = Mustache.render(column_tpl, {:id=>id, :type=>"datetime", :name=>string(nm)})
+add_column(id::AbstractString, nm::Symbol, x::DateTime)         = Mustache.render(column_tpl, Dict(:id=>id, :type=>"datetime", :name=>string(nm)))
 
-add_column(id::String, nm::Symbol, x::Date)         = Mustache.render(column_tpl, {:id=>id, :type=>"date", :name=>string(nm)})
+add_column(id::AbstractString, nm::Symbol, x::Date)         = Mustache.render(column_tpl, Dict(:id=>id, :type=>"date", :name=>string(nm)))
 
-add_column(id::String, nm::Symbol, x::Number)       = Mustache.render(column_tpl, {:id=>id, :type=>"number",   :name=>string(nm)})
+add_column(id::AbstractString, nm::Symbol, x::Number)       = Mustache.render(column_tpl, Dict(:id=>id, :type=>"number",   :name=>string(nm)))
 
-add_column(id::String, nm::Symbol, x::Bool)         = Mustache.render(column_tpl, {:id=>id, :type=>"boolean",  :name=>string(nm)})
+add_column(id::AbstractString, nm::Symbol, x::Bool)         = Mustache.render(column_tpl, Dict(:id=>id, :type=>"boolean",  :name=>string(nm)))
 
 ## Make a google data table from a data frame object
-function make_data_array(id::String, d::DataFrame)
+function make_data_array(id::AbstractString, d::DataFrame)
     wrap(x) = "[$x]"
     make_row(x) = join([two_json(x[1,i]) for i in 1:ncol(d)], ", ") |> wrap
     out = ["new google.visualization.DataTable();"]
@@ -53,7 +53,7 @@ end
 
 
 ## Open a url using our heuristic
-function open_url(url::String) 
+function open_url(url::AbstractString) 
     @osx_only     run(`open $url`)
     @windows_only run(`cmd /c start $url`)
     @linux_only   run(`xdg-open $url`)
