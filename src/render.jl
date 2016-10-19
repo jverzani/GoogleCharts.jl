@@ -23,7 +23,6 @@ end
 ## io -- render to io stream
 ## fname -- render to file
 ## none -- create html file, show in browser
-import Mustache: render
 
 function render{T <: GoogleChart}(io::IO,
                                   charts::Vector{T},     # chart objects
@@ -69,6 +68,71 @@ render(chart::GoogleChart) = render([chart])
 render(io::Void, chart::GoogleChart, tpl::Union{Void, Mustache.MustacheTokens}) = render([chart], tpl)
 render(io::Void, chart::GoogleChart) = render([chart], nothing)
 
+
+## IJulia support
+## read https://developers.google.com/loader/#GoogleLoad to see if this can be tidied up
+writemime_tpl = """
+<div id={{:id}} style="width:{{:width}}px; height:{{:height}}px;"></div>
+<script>
+function load_chart_{{:id}}() {
+var {{:id}}_data = {{{:chart_data}}};
+var {{:id}}_options = {{{:chart_options}}};
+var {{:id}}_chart = new google.visualization.{{:chart_type}}(document.getElementById('{{:id}}'));{{:id}}_chart.draw({{:id}}_data,  {{:id}}_options);
+}
+setTimeout(function(){
+  google.load('visualization', '1', {
+    'callback':load_chart_{{:id}},
+    'packages':['corechart']
+  }
+)}, 10);
+</script>
+"""
+
+
+
+## display to browser, or writemime
+#function Base.repl_show(io::IO, chart::GoogleChart)
+Base.display(chart::GoogleCharts.CoreChart) = render(nothing, chart)
+@compat show(io::IO, chart::GoogleChart) = show(io::IO, MIME"text/plain", chart)
+@compat function show(io::IO, ::MIME"text/plain", chart::GoogleChart)
+    show(io, MIME"text/html", chart)
+    ## if io === STDOUT
+    ##     render(nothing, chart)
+    ## else
+    ##     show(io, "text/html", chart)
+    ## end
+end
+
+@compat function show(io::IO, ::MIME"text/html", x::GoogleChart) 
+    d = Dict(:id => x.id,
+         :width => 600,
+         :height => 400,
+         :chart_data => x.data,
+         :chart_options => json(x.options),
+         :chart_type => x.chart_type
+         )
+    out = Mustache.render(writemime_tpl, d)
+    render(nothing, MIME"text/html", out)
+end
+
+## inject code into browser if displayable
+inject_javascript() = display("text/html", """
+    <script type='text/javascript' src='https://www.google.com/jsapi'></script>
+""")
+        
+## inject when package is loaded
+if displayable("text/html")
+    inject_javascript()
+end
+
+## in case surface plot is desired (not reliable)
+inject_surfaceplot_javascript() = Base.display("text/html", """
+<script type='text/javascript' src='http://javascript-surface-plot.googlecode.com/svn/trunk/javascript/SurfacePlot.js'></script>
+<script type='text/javascript' src='http://javascript-surface-plot.googlecode.com/svn/trunk/javascript/ColourGradient.js'></script>
+""")
+
+
+
 ## for using within Gadfly.weave:
 gadfly_weave_tpl = """
 <div id={{:id}} style="width:{{:width}}px; height:{{:height}}px;"></div>
@@ -93,65 +157,3 @@ end
 
 
         
-
-
-## IJulia support
-import Base.writemime
-export writemime
-
-## read https://developers.google.com/loader/#GoogleLoad to see if this can be tidied up
-writemime_tpl = """
-<div id={{:id}} style="width:{{:width}}px; height:{{:height}}px;"></div>
-<script>
-function load_chart_{{:id}}() {
-var {{:id}}_data = {{{:chart_data}}};
-var {{:id}}_options = {{{:chart_options}}};
-var {{:id}}_chart = new google.visualization.{{:chart_type}}(document.getElementById('{{:id}}'));{{:id}}_chart.draw({{:id}}_data,  {{:id}}_options);
-}
-setTimeout(function(){
-  google.load('visualization', '1', {
-    'callback':load_chart_{{:id}},
-    'packages':['corechart']
-  }
-)}, 10);
-</script>
-"""
-
-function writemime(io::IO, ::MIME"text/html", x::GoogleChart) 
-    d = Dict(:id => x.id,
-         :width => 600,
-         :height => 400,
-         :chart_data => x.data,
-         :chart_options => json(x.options),
-         :chart_type => x.chart_type
-         )
-    out = Mustache.render(writemime_tpl, d)
-    print(io, out)
-end
-
-## inject code into browser if displayable
-inject_javascript() = display("text/html", """
-    <script type='text/javascript' src='https://www.google.com/jsapi'></script>
-""")
-        
-## inject when package is loaded
-if displayable("text/html")
-    inject_javascript()
-end
-
-## in case surface plot is desired (not reliable)
-inject_surfaceplot_javascript() = Base.display("text/html", """
-<script type='text/javascript' src='http://javascript-surface-plot.googlecode.com/svn/trunk/javascript/SurfacePlot.js'></script>
-<script type='text/javascript' src='http://javascript-surface-plot.googlecode.com/svn/trunk/javascript/ColourGradient.js'></script>
-""")
-
-## display to browser, or writemime
-#function Base.repl_show(io::IO, chart::GoogleChart)
-function writemime(io::IO, ::MIME"text/plain", chart::GoogleChart)
-    if io === STDOUT
-        render(nothing, chart)
-    else
-        writemime(io, "text/html", chart)
-    end
-end
-# Base.show(io::IO, chart::GoogleChart) = print(io, "<plot>")

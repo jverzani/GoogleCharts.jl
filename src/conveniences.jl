@@ -6,9 +6,9 @@ using DataArrays
 ## Plot a function
 ## GoogleCharts does not like Inf values, but handles NaN gracefully. We replace
 ## args like [:title=>"My title"]
-function plot(io::Union{IO, AbstractString, Void}, f::Function, a::Real, b::Real, args::Dict)
+function Plot(io::Union{IO, AbstractString, Void}, f::Function, a::Real, b::Real, args::Dict)
     n = 250
-    xs = linspace(a, float(b), n)
+    xs = linspace(a, b, n)
     ys = map(f, xs)
     ys[ ys.== Inf] = NaN
         
@@ -22,22 +22,22 @@ function plot(io::Union{IO, AbstractString, Void}, f::Function, a::Real, b::Real
     chart
 end
 
-plot(f::Function, a::Real, b::Real, args::Dict) = plot(nothing, f, a, b, args)
-function plot(f::Function, a::Real, b::Real; kwargs...) 
+Plot(f::Function, a::Real, b::Real, args::Dict) = Plot(nothing, f, a, b, args)
+function Plot(f::Function, a::Real, b::Real; kwargs...) 
     d = Dict()
     [d[s] = v for (s, v) in kwargs]
-    plot(nothing, f, a, b, d)
+    Plot(nothing, f, a, b, d)
 end
 
 ## 1 or more functions at once
-function  plot(io::Union{IO, AbstractString, Void}, fs::Vector{Function}, a::Real, b::Real, args::Dict)
+function  Plot(io::Union{IO, AbstractString, Void}, fs::Vector{Function}, a::Real, b::Real, args::Dict)
     n = 250
-    xs = linspace(a, float(b), n)
+    xs = linspace(a, b, n)
     d = DataFrame()
     d[:x] =  xs
 
     for i in 1:length(fs)
-        ys = float(map(fs[i], xs))
+        ys = map(fs[i], xs)
         ys[ ys.== Inf] = NaN
         d[symbol("f$i")] = ys
     end
@@ -45,31 +45,31 @@ function  plot(io::Union{IO, AbstractString, Void}, fs::Vector{Function}, a::Rea
     line_chart(d, merge(args, Dict(:curveType => "function")), nothing, nothing)
 end
 
-plot(fs::Vector{Function}, a::Real, b::Real, args::Dict) = plot(nothing, fs, a, b, args)
-function plot(fs::Vector{Function}, a::Real, b::Real; kwargs...) 
+Plot(fs::Vector{Function}, a::Real, b::Real, args::Dict) = Plot(nothing, fs, a, b, args)
+function Plot(fs::Vector{Function}, a::Real, b::Real; kwargs...) 
     d = Dict()
     [d[s] = v for (s,v) in kwargs]
-    plot(nothing, fs, a, b, d)
+    Plot(nothing, fs, a, b, d)
 end
 
 ## parametric plots -- tuples of functions
-function plot(io::Union{IO, AbstractString, Void}, fs::Tuple, a::Real, b::Real, args::Dict)
+function Plot(io::Union{IO, AbstractString, Void}, fs::Tuple, a::Real, b::Real, args::Dict)
     u = linspace(a, b, 250)
     x = map(fs[1], u)
     y = map(fs[2], u)
     args[:curveType] = "function"
-    plot(io, x, y, args)
+    Plot(io, x, y, args)
 end
-plot( fs::Tuple, a::Real, b::Real, args::Dict)=plot(nothing, fs, a, b, args)
-function plot(io::Union{IO, AbstractString, Void}, fs::Tuple, a::Real, b::Real; kwargs...)
+Plot( fs::Tuple, a::Real, b::Real, args::Dict)=Plot(nothing, fs, a, b, args)
+function Plot(io::Union{IO, AbstractString, Void}, fs::Tuple, a::Real, b::Real; kwargs...)
     d = Dict()
     [d[s] = v for (s,v) in kwargs]
-    plot(io, fs, a, b, d)
+    Plot(io, fs, a, b, d)
 end
-plot( fs::Tuple, a::Real, b::Real; kwargs...)=plot(nothing, fs, a, b;  kwargs...)
+Plot( fs::Tuple, a::Real, b::Real; kwargs...)=Plot(nothing, fs, a, b;  kwargs...)
 
 ## plot x,y
-function plot{S <: Real, T <: Real}(io::Union{IO, AbstractString, Void},
+function Plot{S <: Real, T <: Real}(io::Union{IO, AbstractString, Void},
                                     x::Union{DataArray{S, 1}, UnitRange{S}, Vector{S}},
                                     y::Union{DataArray{T, 1}, UnitRange{T}, Vector{T}}, args::Dict)
     if !(length(x)  == length(y)) error("Lengths don't match") end
@@ -79,65 +79,65 @@ function plot{S <: Real, T <: Real}(io::Union{IO, AbstractString, Void},
     line_chart(d, args, nothing, nothing)
 end
 
-function plot{S <: Real, T <: Real}(io::Union{IO, AbstractString, Void},
+function Plot{S <: Real, T <: Real}(io::Union{IO, AbstractString, Void},
                                     x::Union{DataArray{S, 1}, UnitRange{S}, Vector{S}},
                                     y::Union{DataArray{T, 1}, UnitRange{T}, Vector{T}};
                                     kwargs...)
     d = Dict()
     [d[s] = v for (s,v) in kwargs]
-    plot(io, x, y, d)
+    Plot(io, x, y, d)
 end
 
 VectorLike = Union{DataArray, UnitRange, Vector}
-plot(x::VectorLike, y::VectorLike, args::Dict) = plot(nothing, x, y, args)
-function plot(x::VectorLike, y::VectorLike; kwargs...) 
+Plot(x::VectorLike, y::VectorLike, args::Dict) = Plot(nothing, x, y, args)
+function Plot(x::VectorLike, y::VectorLike; kwargs...) 
     d = Dict()
     [d[s] = v for (s,v) in kwargs]
-    plot(nothing, x, y, d)
+    Plot(nothing, x, y, d)
 end
 
 ## Plots with data frames
 SymOrExpr = Union{Symbol, Expr}
-plot(x::SymOrExpr, y::SymOrExpr, data::DataFrame, args::Dict) = plot(data[string(x)], data[string(y)], args)
-function plot(x::SymOrExpr, y::SymOrExpr, data::DataFrame; kwargs...) 
+Plot(x::SymOrExpr, y::SymOrExpr, data::DataFrame, args::Dict) = Plot(data[string(x)], data[string(y)], args)
+function Plot(x::SymOrExpr, y::SymOrExpr, data::DataFrame; kwargs...) 
     d = Dict()
     [d[s] = v for (s,v) in kwargs]
-    plot(x, y, data, d)
+    Plot(x, y, data, d)
 end
 
 ## Scatterplots
-function scatter(io::Union{IO, AbstractString, Void},
+function Scatter(io::Union{IO, AbstractString, Void},
                  x::VectorLike, y::VectorLike, 
                  args::Dict)
     d = DataFrame(x=x, y=y)
     scatter_chart(d, args)
 end
-scatter(x::VectorLike, y::VectorLike, args::Dict) = scatter(nothing, x, y, args)
+Scatter(x::VectorLike, y::VectorLike, args::Dict) = Scatter(nothing, x, y, args)
 
-function scatter(io::Union{IO, AbstractString, Void},
+function Scatter(io::Union{IO, AbstractString, Void},
                  x::VectorLike, y::VectorLike; kwargs...)
     d = Dict()
     [d[s] = v for (s,v) in kwargs]
-    scatter(x, y, d)
+    Scatter(x, y, d)
 end
-scatter(x::VectorLike, y::VectorLike; kwargs...) = scatter(nothing, x, y; kwargs...)
+Scatter(x::VectorLike, y::VectorLike; kwargs...) = Scatter(nothing, x, y; kwargs...)
 
-function scatter(io::Union{IO, AbstractString, Void}, x::SymOrExpr, y::SymOrExpr, data::DataFrame, args::Dict) 
-    scatter(io, data[x], data[y], args)
+function Scatter(io::Union{IO, AbstractString, Void}, x::SymOrExpr, y::SymOrExpr, data::DataFrame, args::Dict) 
+    Scatter(io, data[x], data[y], args)
 end
 
-scatter(x::SymOrExpr, y::SymOrExpr, data::DataFrame, args::Dict) = scatter(nothing, data[x], data[y], args)
+Scatter(x::SymOrExpr, y::SymOrExpr, data::DataFrame, args::Dict) = Scatter(nothing, data[x], data[y], args)
 
-function scatter(io::Union{IO, AbstractString, Void},
+function Scatter(io::Union{IO, AbstractString, Void},
                  x::SymOrExpr, y::SymOrExpr, data::DataFrame; kwargs...) 
     d = Dict()
     [d[s] = v for (s,v) in kwargs]
     !haskey(d, :hAxis) && (d[:hAxis] = Dict(:title=>string(x)))
     !haskey(d, :vAxis) && (d[:vAxis] = Dict(:title=>string(y)))
 
-    scatter(io,data[x], data[y], d)
+    Scatter(io,data[x], data[y], d)
 end
-scatter(x::SymOrExpr, y::SymOrExpr, data::DataFrame; kwargs...) = scatter(nothing, x, y, data; kwargs...)
+Scatter(x::SymOrExpr, y::SymOrExpr, data::DataFrame; kwargs...) = Scatter(nothing, x, y, data; kwargs...)
 
 
 function NaNWrap(idx::Integer, gp::GroupedDataFrame)
@@ -148,24 +148,24 @@ end
 ## iris = data("datasets", "iris")
 ## d=iris[:, [2,3,6]]
 ## gp = groupby(d, "i")
-## scatter(gp)
-function scatter(io::Union{IO, AbstractString, Void}, gp::GroupedDataFrame, args::Dict)
+## Scatter(gp)
+function Scatter(io::Union{IO, AbstractString, Void}, gp::GroupedDataFrame, args::Dict)
     n = length(gp)
     d = DataFrame(x = [[gp[i][:,1] for i in 1:n]...])
     for i in 1:n
         nm = symbol("x$i")
         d[nm] = GoogleCharts.NaNWrap(i, gp) 
     end
-
+    
     scatter_chart(d, merge(Dict(:hAxis=>Dict(:title=>names(gp[1])[1]), :vAxis=>Dict(:title=>names(gp[1])[2])), args))
 end
-scatter(gp::GroupedDataFrame, args::Dict) = scatter(nothing, gp, args)
-function scatter(io::Union{IO, AbstractString, Void}, gp::GroupedDataFrame; kwargs...) 
+Scatter(gp::GroupedDataFrame, args::Dict) = Scatter(nothing, gp, args)
+function Scatter(io::Union{IO, AbstractString, Void}, gp::GroupedDataFrame; kwargs...) 
     d = Dict()
     [d[s] = v for (s,v) in kwargs]
-    scatter(io, gp, d)    
+    Scatter(io, gp, d)    
 end
-scatter(gp::GroupedDataFrame; kwargs...)  = scatter(nothing, gp; kwargs...)
+Scatter(gp::GroupedDataFrame; kwargs...)  = Scatter(nothing, gp; kwargs...)
 
 
 
@@ -359,7 +359,7 @@ function Base.display(io::IO, p::SurfacePlot)
         writemime(io, "text/html", p)
     end
 end
-function writemime(io::IO, ::MIME"text/html", p::SurfacePlot) 
+function show(io::IO, ::MIME"text/html", p::SurfacePlot) 
     plt = Mustache.render(surface_tpl, p.x)
     out = """
 <div id='surfacePlotDiv_$(p.x[:chart_id])' style="width:500px; height:500px;"></div>

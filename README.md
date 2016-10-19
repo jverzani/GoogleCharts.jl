@@ -20,10 +20,9 @@ This package allows this to be done within `julia` by
 
 * providing various constructors to make the type of chart
 
-* providing a method to see the charts. From `IJulia` this happens
-  automatically. From the command line, plots are rendered to a local
-  browser through `repl_show`. In general, the `render` method can
-  draw the chart or charts to an IOStream or file.
+* providing a method to see the charts. This is called through
+`Julia`'s `show` mechanism.  In general, the `render` method can draw
+the chart or charts to an IOStream or file.
 
 A basic usage (see the test/ directory for more)
 
@@ -35,18 +34,16 @@ scatter_data = DataFrame(
     Weight = [12, 5.5, 14, 5, 3.5, 7  ]
 )
 
-options = {:title => "Age vs. Weight comparison",
-           :hAxis =>  {:title => "Age", 
+options = Dict(:title => "Age vs. Weight comparison",
+           :hAxis =>  Dict(:title => "Age", 
                        :minValue => 0, 
-                       :maxValue => 15},	
-           :vAxis =>  {:title => "Weight", 
+                       :maxValue => 15),	
+           :vAxis =>  Dict(:title => "Weight", 
                        :minValue => 0, 
-                       :maxValue => 15}
-}
+                       :maxValue => 15)
+)
 
-chart = scatter_chart(scatter_data, options);
-
-render(chart)   ## displays in browser. Not used in IJulia.
+scatter_chart(scatter_data, options)
 ```
 
 For non-nested options, keyword arguments can be given, as opposed to a dictionary:
@@ -87,30 +84,29 @@ In the `tests/` subdirectory is a file with implementations with this
 package of the basic examples from Google's web pages. Some additional
 examples of configurations can be found there.
 
-The `render` method can draw a chart to an IOStream, a specified
+The `GoogleCharts.render` method can draw a chart to an IOStream, a specified
 filename, or (when used as above) to a web page that is displayed
 locally. One can specify more than one chart at a time using a vector
-of charts. We have defined a method to render the chart in
-the browser at the REPL and a `writemime` method to render within an `IJulia` notebook.
+of charts. 
 
-### A plot function
+### A Plot function
 
-There is a `plot` function for plotting functions with a similar interface as `Gadfly`'s `plot` function:
+There is a `Plot` function for plotting functions with a similar interface as `Plot`'s `plot` function:
 
 ```
-plot(sin, 0, 2pi)
+Plot(sin, 0, 2pi)
 ```
 
 A vector of functions:
 
 ```
-plot([sin, u -> cos(u) > 0 ? 0 : NaN], 0, 2pi, 
+Plot([sin, u -> cos(u) > 0 ? 0 : NaN], 0, 2pi, 
 	   lineWidth=5, 
 	   title="A function and where its derivative is positive",
-           vAxis={:minValue => -1.2, :maxValue => 1.2})
+           vAxis=Dict(:minValue => -1.2, :maxValue => 1.2))
 ```
 
-The `plot` function uses a `line_chart`. The above example shows that 
+The `Plot` function uses a `line_chart`. The above example shows that 
 `NaN` values are handled gracefully, unlike `Inf` values, which we replace with `NaN`.
 
 Plot also works for paired vectors:
@@ -118,8 +114,8 @@ Plot also works for paired vectors:
 ```
 x = linspace(0, 1., 20)
 y = rand(20)
-plot(x, y)			         # dot-to-dot plot
-plot(x, y, curveType="function")         # smooths things out
+Plot(x, y)			         # dot-to-dot plot
+Plot(x, y, curveType="function")         # smooths things out
 ```
 
 ### parametric plots
@@ -127,19 +123,19 @@ plot(x, y, curveType="function")         # smooths things out
 Passing a tuple of functions will produce a parametric plot:
 
 ```
-plot((x -> sin(2x), cos), 0, 2pi)
+Plot((x -> sin(2x), cos), 0, 2pi)
 ```
 
 ### scatter plots
 
-The latter shows that `plot` assumes your data is a discrete
-approximation to a function. For scatterplots, the `scatter`
+The latter shows that `Plot` assumes your data is a discrete
+approximation to a function. For scatterplots, the `Scatter`
 convenience function is given. A simple use might be:
 
 ```
 x = linspace(0, 1., 20)
 y = rand(20)
-scatter(x, y)
+Scatter(x, y)
 ```
 
 If the data is in a data frame format we have a interface like:
@@ -147,7 +143,7 @@ If the data is in a data frame format we have a interface like:
 ```
 using RDatasets
 mtcars = dataset("datasets", "mtcars")
-scatter(:WT, :MPG, mtcars)
+Scatter(:WT, :MPG, mtcars)
 ```
 
 And we can even use with `groupby` objects:
@@ -156,7 +152,7 @@ And we can even use with `groupby` objects:
 iris = dataset("datasets", "iris")
 d=iris[:, [2,3,6]]          ## in the order  "x, y, grouping factor"
 gp = groupby(d, :Species)
-scatter(gp)                 ## in R this would be plot(Sepal.Width ~ Sepal.Length, iris, col=Species)
+Scatter(gp)                 ## in R this would be plot(Sepal.Width ~ Sepal.Length, iris, col=Species)
                             ## or ggplot(iris, aes(x=Sepal.Length, y=Sepal.Width, color=Species)) + geom_point()
 ```
 
