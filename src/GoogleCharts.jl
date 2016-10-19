@@ -25,13 +25,14 @@ global chart_tpl = Mustache.template_from_file(tpl_name)
 
 
 export GoogleChart
-export Plot, Scatter, help_on_chart
+export help_on_chart
 export area_chart, bar_chart, bubble_chart, candlestick_chart, column_chart, combo_chart,
        gauge_chart, geo_chart, line_chart, pie_chart, scatter_chart, stepped_area_chart,
        table_chart, tree_chart, annotated_time_line, intensity_map, motion_chart, org_chart,
        image_spark_line
-export boxplot, histogram
-export surfaceplot
+export Plot, Scatter, help_on_chart
+export Boxplot, Hist
+export Surfaceplot
 
 
 

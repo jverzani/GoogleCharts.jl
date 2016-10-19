@@ -1,5 +1,4 @@
 using DataFrames, GoogleCharts, Dates
-render = identity
 
 year_sales_expenses = DataFrame(
     Year     = map(string, 2004:2007),
@@ -16,7 +15,6 @@ options = [
            :hAxis => [:title => "Year",  :titleTextStyle => [:color => "red"]]
            ];
 chart = area_chart(area_data, options)
-render(chart)
 ## or
 area_chart(area_data, title="Company Performance", haxis=[:title => "Year",  :titleTextStyle => [:color => "red"]])
 
@@ -24,7 +22,6 @@ area_chart(area_data, title="Company Performance", haxis=[:title => "Year",  :ti
 ## Bar Chart
 bar_data = area_data
 chart = bar_chart(bar_data, options)
-render(chart)
 
 ## Bubble Chart
 
@@ -46,7 +43,6 @@ options = [
 
 
 chart = bubble_chart(bubble_data, options)
-render(chart)
 ## or
 bubble_chart(bubble_data, 
            title = "Correlation between life expectancy, fertility rate and population of some world countries (2010)",
@@ -66,7 +62,6 @@ candle_data = DataFrame(
 
 
 chart = candlestick_chart(candle_data, Dict())
-render(chart)
 
 ## column_chart,
 column_data = year_sales_expenses
@@ -74,7 +69,6 @@ options = [:title => "Company performance",
            :hAxis => [:title=> "Year", :titleTextStyle=> [:color => "red"]]]
  
 chart = column_chart(column_data, options)
-render(chart)          
 ## combo_chart,
 
 combo_data = DataFrame(
@@ -94,7 +88,7 @@ options = [
            :series=> ["{}","{}","{}","{}",[:type=> "line"]]
         ];
 chart = combo_chart(combo_data, options)
-render(chart)    
+
 ## gauge_chart,
  gauge_data = DataFrame(
      Label=["Memory", "CPU", "Network"],
@@ -108,7 +102,7 @@ options = [
            :minorTicks=> 5
         ]
 chart = gauge_chart(gauge_data, options)
-render(chart) 
+
 ## geo_chart,
 
 geo_data = DataFrame(
@@ -117,7 +111,7 @@ geo_data = DataFrame(
 )
 options = Dict()
 chart = geo_chart(geo_data, options)
-render(chart) 
+
 
 
 
@@ -125,7 +119,7 @@ render(chart)
 line_data = area_data
 options = [:title => "Company Performance"]
 chart = line_chart(line_data, options)
-render(chart)
+
 
 
 ## pie_chart,
@@ -135,7 +129,7 @@ pie_data = DataFrame(
 )
 options = [:title => "My Daily Activities"]
 chart = pie_chart(pie_data, options)
-render(chart)
+
 
 ## Scatter Chart
 
@@ -151,7 +145,7 @@ options = [:title => "Age vs. Weight comparison",
 
 
 chart = scatter_chart(scatter_data, options)
-render(chart)
+
 
 ## stepped_area__chart,
 
@@ -164,7 +158,7 @@ stepped_area_data = DataFrame(
                               )
 options = [:title=>"The decline of 'The 39 Steps'", :vAxis => [:title=>"Accumulated Rating"], :isStacked => true]
 chart = stepped_area_chart(stepped_area_data, options)
-render(chart)
+
 ## table_chart,
 ### XXX Need a way to do value/format for Salary, but perhaps this is best done in julia?
 table_data = DataFrame(
@@ -174,7 +168,7 @@ table_data = DataFrame(
 )
 options = [:showRowNumber => true]
 chart = table_chart(table_data, options)
-render(chart)
+
 
 
 ## tree_chart,
@@ -193,7 +187,7 @@ options = [
           :showScale=> true
            ]
 chart = tree_chart(tree_data, options)
-render(chart)
+
 
 ## annotated_time_line,
 ## extra hassle to get ymd into data frame
@@ -211,7 +205,7 @@ tmp = DataFrame(
 annotated_data = vcat(annotated_data, tmp)
 options = [:displayAnnotations=>true]
 chart = annotated_time_line(annotated_data, options)
-render(chart)
+
 
 ## intensity_map,
 
@@ -229,7 +223,6 @@ d[:Location] = [e, w, w, e, w, w]
 
 
 chart = motion_chart(d, nothing)
-render(chart)
 
 
 ## org_chart,
@@ -242,7 +235,6 @@ org_data = DataFrame(
 
 options = [:allowHtml=>true]
 chart = org_chart(org_data, options)
-render(chart)
 
 
 
@@ -255,18 +247,17 @@ spark_data = DataFrame(
 options = [:width=> 120, :height=> 40, :showAxisLines=> false,  :showValueLabels=> false, :labelPosition=> "left"]
 
 chart = image_spark_line(spark_data, options)
-render(chart)
 
 
 
 
-## Our plot interface
-plot(sin, 0, 2pi)
-plot([sin, u -> cos(u) > 0 ? 0.0 : NaN], 0, 2pi, [:lineWidth=>5, 
+## Our Plot interface
+Plot(sin, 0, 2pi)
+Plot([sin, u -> cos(u) > 0 ? 0.0 : NaN], 0, 2pi, [:lineWidth=>5, 
 	                                        :title=>"A function and where its derivative is positive",
 						:vAxis=>[:minValue => -1.2, :maxValue => 1.2]
 						])
-plot([sin, u -> cos(u) > 0 ? sin(u) : NaN], 0, 2pi, [:lineWidth=>5, 
+Plot([sin, u -> cos(u) > 0 ? sin(u) : NaN], 0, 2pi, [:lineWidth=>5, 
 	                                        :title=>"A function and where its derivative is positive",
 						:vAxis=>[:minValue => -1.2, :maxValue => 1.2]
 						])
@@ -274,39 +265,35 @@ plot([sin, u -> cos(u) > 0 ? sin(u) : NaN], 0, 2pi, [:lineWidth=>5,
 ## stupid boxplot interface
 x = randn(20)
 y = rand(20)
-boxplot(x)
+Boxplot(x)
 ## might swap x and y order
-boxplot([:x => x, :y=>y])
+Boxplot([:x => x, :y=>y])
 ## a bit better
-d = DataFrame(data=[x, y],
-              nms=reshape([repmat(["x"], length(x),1), repmat(["y"], length(y),1)], length([x,y]))
+d = DataFrame(data=[x; y],
+              nms=reshape([repmat(["x"], length(x),1), repmat(["y"], length(y),1)], length([x; y]))
               )
 gp = groupby(d, :nms)
-boxplot(gp)
-
-## histogram
-histogram(x)
-histogram(x, n=50)
+Boxplot(gp)
 
 
 ## From the README
 
 ## parametric plots
-plot((x -> sin(2x), cos), 0, 2pi)
+Plot((x -> sin(2x), cos), 0, 2pi)
 
-## scatter plots
+## Scatter plots
 x = linspace(0, 1., 20)
 y = rand(20)
-scatter(x, y)
+Scatter(x, y)
 
 # using RDatasets ## added dependency
 # mtcars = dataset("datasets", "mtcars")
-# scatter(:WT, :MPG, mtcars)
+# Scatter(:WT, :MPG, mtcars)
 
 # iris = dataset("datasets", "iris")
 # d=iris[:, [2,3,5]]          ## in the order  "x, y, grouping factor"
 # gp = groupby(d, :Species)
-# scatter(gp)  
+# Scatter(gp)  
 
 ## surface plots (YMMV)
 #surfaceplot((x,y) -> x^2 + y^2, linspace(0,1,20), linspace(0,2,20))

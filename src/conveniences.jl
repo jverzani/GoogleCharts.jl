@@ -88,7 +88,7 @@ function Plot{S <: Real, T <: Real}(io::Union{IO, AbstractString, Void},
     Plot(io, x, y, d)
 end
 
-VectorLike = Union{DataArray, UnitRange, Vector}
+VectorLike = Union{DataArray, UnitRange, Vector, AbstractArray}
 Plot(x::VectorLike, y::VectorLike, args::Dict) = Plot(nothing, x, y, args)
 function Plot(x::VectorLike, y::VectorLike; kwargs...) 
     d = Dict()
@@ -197,7 +197,7 @@ end
 
 ## Boxplot only shows five number summary, no marking of outliers
 ## in fact, no marking of the median!
-function boxplot(io::Union{IO, AbstractString, Void}, x::Vector, args::Dict)
+function Boxplot(io::Union{IO, AbstractString, Void}, x::Vector, args::Dict)
     # stats = boxplot_stats(x)
     sort!(x)
     stats = quantile(x, 0:1/4:1)
@@ -210,18 +210,18 @@ function boxplot(io::Union{IO, AbstractString, Void}, x::Vector, args::Dict)
 
     candlestick_chart(data, merge(args, Dict(:legend=>nothing)))
 end
-boxplot(x::Vector, args::Dict) = boxplot(nothing, x, args)
+Boxplot(x::Vector, args::Dict) = Boxplot(nothing, x, args)
 
-function boxplot(io::Union{IO, AbstractString, Void}, x::Vector; kwargs...)
+function Boxplot(io::Union{IO, AbstractString, Void}, x::Vector; kwargs...)
     d = Dict()
     [d[s] = v for (s,v) in kwargs]
-    boxplot(io, x, d)
+    Boxplot(io, x, d)
 end
-boxplot(x::Vector; kwargs...) = boxplot(nothing, x; kwargs...)
+Boxplot(x::Vector; kwargs...) = Boxplot(nothing, x; kwargs...)
 
 
 ## Not great, as ordering in d is not guaranteed
-function boxplot(io::Union{IO, AbstractString, Void}, d::Dict, args::Dict)
+function Boxplot(io::Union{IO, AbstractString, Void}, d::Dict, args::Dict)
     ## not efficient, but whatever
     nms = AbstractString[string(k) for k in keys(d)]
     vals = [quantile(v, u)::Real for (k,v) in d, u in 0:.25:1] 
@@ -234,16 +234,16 @@ function boxplot(io::Union{IO, AbstractString, Void}, d::Dict, args::Dict)
 
     candlestick_chart(data, merge(args, Dict(:legend=>nothing)))
 end
-boxplot(d::Dict, args::Dict) = boxplot(nothing, d, args)
-function boxplot(io::Union{IO, AbstractString, Void}, D::Dict; kwargs...)
+Boxplot(d::Dict, args::Dict) = Boxplot(nothing, d, args)
+function Boxplot(io::Union{IO, AbstractString, Void}, D::Dict; kwargs...)
     d = Dict()
     [d[s] = v for (s,v) in kwargs]
-    boxplot(io, D, d)
+    Boxplot(io, D, d)
 end
-boxplot(d::Dict; kwargs...) = boxplot(nothing, d; kwargs...)
+Boxplot(d::Dict; kwargs...) = Boxplot(nothing, d; kwargs...)
 
 ## XXX This is broken. How to easily get names from GroupedDataFrame
-function boxplot(io::Union{IO, AbstractString, Void}, gp::GroupedDataFrame, args::Dict)
+function Boxplot(io::Union{IO, AbstractString, Void}, gp::GroupedDataFrame, args::Dict)
     n = length(gp)
     nms = (gp |> sum)[:,1] ## hack!
     vals = [quantile(v[:,1], u) for v in gp, u in 0:.25:1]
@@ -256,19 +256,19 @@ function boxplot(io::Union{IO, AbstractString, Void}, gp::GroupedDataFrame, args
     
     candlestick_chart(data, merge(args, Dict(:title=>"boxplot", :legend=>nothing)))
 end
-boxplot(gp::GroupedDataFrame, args::Dict) = boxplot(gp, args)
-function boxplot(io::Union{IO, AbstractString, Void}, gp::GroupedDataFrame; kwargs...)
+Boxplot(gp::GroupedDataFrame, args::Dict) = Boxplot(gp, args)
+function Boxplot(io::Union{IO, AbstractString, Void}, gp::GroupedDataFrame; kwargs...)
     d = Dict()
     [d[s] = v for (s,v) in kwargs]
-    boxplot(io, gp, d)
+    Boxplot(io, gp, d)
 end
-boxplot(gp::GroupedDataFrame; kwargs...) = boxplot(nothing, gp; kwargs...)
+Boxplot(gp::GroupedDataFrame; kwargs...) = Boxplot(nothing, gp; kwargs...)
 
 ### histogram
-function histogram(io::Union{IO, AbstractString, Void}, x::Vector, args::Dict; n::Integer=0)
+function histogram(io::Union{IO, AbstractString, Void}, x::VectorLike, args::Dict; n::Integer=0)
     
     if n == 0
-        n = iceil(log2(length(x)) + 1) #  sturges from R
+        n = ceil(Int, log2(length(x)) + 1) #  sturges from R
     end
     bins, counts = hist(x, n)
 
@@ -280,14 +280,14 @@ function histogram(io::Union{IO, AbstractString, Void}, x::Vector, args::Dict; n
                                         :bar=>Dict(:groupWidth=>"99%"))))
 
 end
-histogram(x::Vector, args::Dict; n::Integer=0) = histogram(nothing, io, args, n=n)
+histogram(x::VectorLike, args::Dict; n::Integer=0) = histogram(nothing, io, args, n=n)
 
-function histogram(io::Union{IO, AbstractString, Void}, x::Vector; n::Integer=0, kwargs...) 
+function histogram(io::Union{IO, AbstractString, Void}, x::VectorLike; n::Integer=0, kwargs...) 
     d = Dict()
     [d[s] = v for (s,v) in kwargs]
     histogram(io, x, d, n=n)
 end
-histogram(x::Vector; n::Integer=0, kwargs...) = histogram(nothing, x; n=n, kwargs...)
+histogram(x::VectorLike; n::Integer=0, kwargs...) = histogram(nothing, x; n=n, kwargs...)
 
 function histogram(io::Union{IO, AbstractString, Void}, x::Vector; kwargs...) 
     d = Dict()
@@ -295,7 +295,8 @@ function histogram(io::Union{IO, AbstractString, Void}, x::Vector; kwargs...)
     histogram(io, x, d)
 end
 histogram(x::Vector; kwargs...)  = histogram(nothing, x; kwargs...)
-    
+
+Hist(xs...; kwargs...) = histogram(xs...; kwargs...)
 
 
 
@@ -371,7 +372,7 @@ $plt
 end
 
 ## XXX This needs a way to pass options in ...
-function surfaceplot(io::Union{IO, AbstractString, Void}, f::Function, x::Vector, y::Vector;
+function Surfaceplot(io::Union{IO, AbstractString, Void}, f::Function, x::Vector, y::Vector;
                      xPos::Real=0,
                      yPos::Real=0,
                      width::Int=600,
@@ -392,4 +393,4 @@ function surfaceplot(io::Union{IO, AbstractString, Void}, f::Function, x::Vector
                          ))
     chart
 end
-surfaceplot(f::Function, x::Vector, y::Vector; kwargs...)   = surfaceplot(nothing, f, x, y; kwargs...)
+Surfaceplot(f::Function, x::Vector, y::Vector; kwargs...)   = Surfaceplot(nothing, f, x, y; kwargs...)
